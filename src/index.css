@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark theme (default) */
+  --color-white: 255 255 255;
+  --color-neutral-50: 250 250 250;
+  --color-neutral-100: 245 245 245;
+  --color-neutral-200: 229 229 229;
+  --color-neutral-300: 212 212 212;
+  --color-neutral-400: 163 163 163;
+  --color-neutral-500: 115 115 115;
+  --color-neutral-600: 82 82 82;
+  --color-neutral-700: 64 64 64;
+  --color-neutral-800: 38 38 38;
+  --color-neutral-900: 23 23 23;
+  --color-neutral-950: 10 10 10;
+}
+
+:root.light {
+  /* Light theme — remap neutral palette to light backgrounds + dark text */
+  --color-white: 17 17 17;           /* text-white → dark text in light mode */
+  --color-neutral-50: 0 0 0;
+  --color-neutral-100: 243 244 246;
+  --color-neutral-200: 229 231 235;
+  --color-neutral-300: 107 114 128;   /* secondary text → gray-500-ish */
+  --color-neutral-400: 75 85 99;      /* muted text → gray-600-ish */
+  --color-neutral-500: 55 65 81;      /* labels/icons → gray-700-ish */
+  --color-neutral-600: 31 41 55;      /* darker muted → gray-800-ish */
+  --color-neutral-700: 209 213 219;   /* borders → gray-300 */
+  --color-neutral-800: 226 232 240;   /* card hovers, inputs → gray-200-ish */
+  --color-neutral-900: 255 255 255;   /* card backgrounds → white */
+  --color-neutral-950: 249 250 251;   /* page background → gray-50 */
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    @apply bg-neutral-950 text-neutral-100 font-sans antialiased;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-neutral-700;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-neutral-300 hover:text-white hover:bg-neutral-800 font-medium text-sm transition-colors;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors;
+  }
+  .input {
+    @apply w-full px-3.5 py-2.5 rounded-lg bg-neutral-800 border border-neutral-700 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors;
+  }
+  .label {
+    @apply block text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-1.5;
+  }
+  .card {
+    @apply bg-neutral-900 border border-neutral-800 rounded-xl;
+  }
+  .card-hover {
+    @apply hover:border-neutral-700 hover:bg-neutral-800/50 transition-all cursor-pointer;
+  }
+  .stat-value {
+    @apply text-3xl font-bold text-white tabular-nums;
+  }
+  .stat-label {
+    @apply text-xs text-neutral-500 uppercase tracking-wide font-medium;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .animate-slide-in {
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .animate-pulse-red {
+    animation: pulseRed 2s ease-in-out infinite;
+  }
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #404040 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #404040;
+    border-radius: 3px;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseRed {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+}
