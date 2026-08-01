@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { supabase, Match, MatchEvent, Guest, MatchAttendance, Profile, Opponent, Competition } from '@/lib/supabase';
 import { COMP_TYPES, TYPE_LABELS } from '@/screens/admin/AdminCompetitions';
-import { MATCH_TYPES } from '@/lib/utils';
+import { MATCH_TYPES, formatDate, cn } from '@/lib/utils';
 import { useRouter } from '@/contexts/RouterContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal, ConfirmModal } from '@/components/Modal';
 import { Loading, EmptyState, ErrorState } from '@/components/States';
 import { Crest } from '@/components/Crest';
 import { StatusBadge, EventIcon, eventTypeLabel } from '@/components/Badges';
-import { formatDate, cn } from '@/lib/utils';
+
 import {
   ArrowLeft, Calendar, Clock, MapPin, Trophy, Shirt, Edit2, Save,
   Plus, Trash2, Share2, Copy, Users, UserPlus, Check, X, Loader2,
@@ -54,6 +54,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [showNewOpp, setShowNewOpp] = useState(false);
   const [showNewComp, setShowNewComp] = useState(false);
+  const [savingAttendanceId, setSavingAttendanceId] = useState<string | null>(null);
   const [newOppName, setNewOppName] = useState('');
   const [newCompName, setNewCompName] = useState('');
   const [newCompType, setNewCompType] = useState<Competition['type']>('Championship');
@@ -337,6 +338,34 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
   if (loading) return <Loading />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!match) return null;
+
+  const attendanceMap = new Map(attendance.map(a => [a.player_id, a]));
+
+  async function setAttendanceFor(playerId: string, resposta: 'vou' | 'nao_vou' | 'talvez', existingId?: string) {
+    setSavingAttendanceId(playerId);
+    try {
+      if (existingId) {
+        const { error } = await supabase.from('match_attendance').update({ resposta, updated_at: new Date().toISOString() }).eq('id', existingId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('match_attendance').insert({ match_id: matchId, player_id: playerId, resposta });
+        if (error) throw error;
+      }
+      const { data } = await supabase.from('match_attendance').select('*, profiles(nome, apelido, foto_url)').eq('match_id', matchId);
+      setAttendance(data || []);
+    } catch { showToast('Erro ao atualizar presença', 'error'); }
+    finally { setSavingAttendanceId(null); }
+  }
+
+  async function removeAttendanceFor(playerId: string, attId: string) {
+    setSavingAttendanceId(playerId);
+    try {
+      const { error } = await supabase.from('match_attendance').delete().eq('id', attId);
+      if (error) throw error;
+      setAttendance(prev => prev.filter(a => a.id !== attId));
+    } catch { showToast('Erro ao remover presença', 'error'); }
+    finally { setSavingAttendanceId(null); }
+  }
 
   const attendanceByStatus = {
     vou: attendance.filter(a => a.resposta === 'vou'),
@@ -631,12 +660,58 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
 
       {/* Attendance */}
       <div className="card p-5">
-        <h2 className="text-base font-bold text-white mb-4">Presenças</h2>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <AttendanceList icon={<CheckCircle size={16} className="text-green-400" />} title="Confirmados" list={attendanceByStatus.vou} color="green" />
-          <AttendanceList icon={<X size={16} className="text-red-400" />} title="Não vão" list={attendanceByStatus.nao_vou} color="red" />
-          <AttendanceList icon={<HelpCircle size={16} className="text-yellow-400" />} title="Talvez" list={attendanceByStatus.talvez} color="yellow" />
-          <AttendanceList icon={<Users size={16} className="text-neutral-400" />} title="Sem resposta" list={noResponse.map(p => ({ profiles: p }))} color="neutral" />
+        <h2 className="text-base font-bold text-white mb-1">Presenças</h2>
+        <p className="text-neutral-500 text-xs mb-4">Clique em um status para definir a presença de cada jogador.</p>
+        <div className="flex gap-4 mb-4 flex-wrap">
+          <span className="text-sm text-green-400 font-semibold flex items-center gap-1"><CheckCircle size={14} /> Vou {attendanceByStatus.vou.length}</span>
+          <span className="text-sm text-red-400 font-semibold flex items-center gap-1"><X size={14} /> Não vou {attendanceByStatus.nao_vou.length}</span>
+          <span className="text-sm text-yellow-400 font-semibold flex items-center gap-1"><HelpCircle size={14} /> Talvez {attendanceByStatus.talvez.length}</span>
+          <span className="text-sm text-neutral-500 font-semibold flex items-center gap-1"><Users size={14} /> Sem resposta {noResponse.length}</span>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-2">
+          {players.map(p => {
+            const att = attendanceMap.get(p.id);
+            const current = att?.resposta;
+            return (
+              <div key={p.id} className="flex items-center gap-2 p-2.5 rounded-lg bg-neutral-800/50">
+                <div className="w-7 h-7 rounded-full bg-neutral-700 overflow-hidden shrink-0">
+                  {p.foto_url ? <img src={p.foto_url} alt={p.nome} className="w-full h-full object-cover" /> : (
+                    <div className="w-full h-full flex items-center justify-center text-xs font-bold text-neutral-500">{(p.apelido || p.nome).charAt(0).toUpperCase()}</div>
+                  )}
+                </div>
+                <span className="text-neutral-300 text-sm truncate flex-1">{p.apelido || p.nome}</span>
+                <div className="flex gap-1 shrink-0">
+                  {(['vou', 'talvez', 'nao_vou'] as const).map(status => (
+                    <button
+                      key={status}
+                      onClick={() => setAttendanceFor(p.id, status, att?.id)}
+                      disabled={savingAttendanceId === p.id}
+                      className={cn(
+                        'w-7 h-7 rounded-md flex items-center justify-center transition-colors',
+                        current === status
+                          ? status === 'vou' ? 'bg-green-600 text-white' : status === 'nao_vou' ? 'bg-red-600 text-white' : 'bg-yellow-500 text-neutral-900'
+                          : 'bg-neutral-700/50 text-neutral-600 hover:bg-neutral-700',
+                      )}
+                      title={status === 'vou' ? 'Vou' : status === 'nao_vou' ? 'Não vou' : 'Talvez'}
+                    >
+                      {savingAttendanceId === p.id ? <Loader2 size={12} className="animate-spin" /> :
+                        status === 'vou' ? <Check size={14} /> : status === 'nao_vou' ? <X size={14} /> : <HelpCircle size={14} />}
+                    </button>
+                  ))}
+                  {current && (
+                    <button
+                      onClick={() => removeAttendanceFor(p.id, att!.id)}
+                      disabled={savingAttendanceId === p.id}
+                      className="w-7 h-7 rounded-md flex items-center justify-center bg-neutral-700/50 text-neutral-600 hover:bg-neutral-700 hover:text-red-400 transition-colors"
+                      title="Limpar"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -792,44 +867,4 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
   );
 }
 
-function AttendanceList({
-  icon, title, list, color,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  list: { profiles: { nome: string; apelido: string | null; foto_url: string | null }; player_id?: string }[];
-  color: 'green' | 'red' | 'yellow' | 'neutral';
-}) {
-  const countCls = {
-    green: 'text-green-400', red: 'text-red-400', yellow: 'text-yellow-400', neutral: 'text-neutral-400',
-  }[color];
 
-  return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        {icon}
-        <h3 className="text-sm font-semibold text-neutral-300">{title}</h3>
-        <span className={cn('text-sm font-bold tabular-nums', countCls)}>{list.length}</span>
-      </div>
-      {list.length === 0 ? (
-        <p className="text-neutral-600 text-xs">Ninguém</p>
-      ) : (
-        <div className="space-y-1.5">
-          {list.map((a, i) => {
-            const p = a.profiles;
-            return (
-              <div key={a.player_id || i} className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-neutral-800 overflow-hidden shrink-0">
-                  {p.foto_url ? <img src={p.foto_url} alt={p.nome} className="w-full h-full object-cover" /> : (
-                    <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-neutral-600">{(p.apelido || p.nome).charAt(0).toUpperCase()}</div>
-                  )}
-                </div>
-                <span className="text-neutral-300 text-sm truncate">{p.apelido || p.nome}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
