@@ -5,7 +5,7 @@ import { Crest } from '@/components/Crest';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Calendar, Users, BarChart3, Wallet,
-  Trophy, UserCog, LogOut, Menu, X, Settings, Handshake,
+  Trophy, UserCog, LogOut, Menu, X, Settings, Handshake, Shield,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -17,6 +17,8 @@ const adminNav = [
   { label: 'Mensalidades', path: '/admin/mensalidades', icon: Wallet },
   { label: 'Financeiro', path: '/admin/financeiro', icon: Trophy },
   { label: 'Temporadas', path: '/admin/temporadas', icon: Settings },
+  { label: 'Adversários', path: '/admin/adversarios', icon: Shield },
+  { label: 'Competições', path: '/admin/competicoes', icon: Trophy },
   { label: 'Patrocinadores', path: '/admin/patrocinadores', icon: Handshake },
 ];
 

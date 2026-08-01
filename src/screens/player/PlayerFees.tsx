@@ -4,7 +4,7 @@ import { supabase, MonthlyFee } from '@/lib/supabase';
 import { useToast } from '@/contexts/ToastContext';
 import { Loading, EmptyState, ErrorState } from '@/components/States';
 import { formatDate, cn } from '@/lib/utils';
-import { Wallet, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Wallet, CheckCircle, Clock, AlertTriangle, Ban } from 'lucide-react';
 
 export function PlayerFees() {
   const { profile } = useAuth();
@@ -37,8 +37,9 @@ export function PlayerFees() {
   if (loading) return <Loading />;
   if (error) return <ErrorState message={error} onRetry={load} />;
 
-  const totalPago = fees.filter(f => f.status === 'pago').reduce((s, f) => s + Number(f.valor), 0);
-  const totalPendente = fees.filter(f => f.status !== 'pago').reduce((s, f) => s + Number(f.valor), 0);
+  const totalPago = fees.filter(f => f.status === 'pago' && !f.isento).reduce((s, f) => s + Number(f.valor), 0);
+  const totalPendente = fees.filter(f => f.status !== 'pago' && !f.isento).reduce((s, f) => s + Number(f.valor), 0);
+  const totalIsento = fees.filter(f => f.isento).length;
 
   return (
     <div className="space-y-5">
@@ -54,6 +55,9 @@ export function PlayerFees() {
           <p className="text-2xl font-bold text-yellow-400 tabular-nums mt-1">R$ {totalPendente.toFixed(2)}</p>
         </div>
       </div>
+      {totalIsento > 0 && (
+        <p className="text-neutral-500 text-sm">{totalIsento} mensalidade(s) isenta(s)</p>
+      )}
 
       {fees.length === 0 ? (
         <EmptyState icon={<Wallet size={48} />} title="Sem mensalidades" description="Nenhuma mensalidade cadastrada para você ainda." />
@@ -65,7 +69,8 @@ export function PlayerFees() {
                 'w-10 h-10 rounded-lg flex items-center justify-center shrink-0',
                 fee.status === 'pago' ? 'bg-green-500/20' : fee.status === 'atrasado' ? 'bg-red-500/20' : 'bg-yellow-500/20',
               )}>
-                {fee.status === 'pago' ? <CheckCircle size={20} className="text-green-400" />
+                {fee.isento ? <Ban size={20} className="text-neutral-500" />
+                  : fee.status === 'pago' ? <CheckCircle size={20} className="text-green-400" />
                   : fee.status === 'atrasado' ? <AlertTriangle size={20} className="text-red-400" />
                   : <Clock size={20} className="text-yellow-400" />}
               </div>
@@ -79,14 +84,15 @@ export function PlayerFees() {
                 )}
               </div>
               <div className="text-right shrink-0">
-                <p className="text-white font-bold tabular-nums">R$ {Number(fee.valor).toFixed(2)}</p>
+                <p className="text-white font-bold tabular-nums">{fee.isento ? 'Isento' : `R$ ${Number(fee.valor).toFixed(2)}`}</p>
                 <span className={cn(
                   'badge mt-1',
-                  fee.status === 'pago' ? 'bg-green-500/15 text-green-400 border border-green-800/40'
+                  fee.isento ? 'bg-neutral-500/15 text-neutral-400 border border-neutral-700'
+                    : fee.status === 'pago' ? 'bg-green-500/15 text-green-400 border border-green-800/40'
                     : fee.status === 'atrasado' ? 'bg-red-500/15 text-red-400 border border-red-800/40'
                     : 'bg-yellow-500/15 text-yellow-400 border border-yellow-800/40',
                 )}>
-                  {fee.status === 'pago' ? 'Pago' : fee.status === 'atrasado' ? 'Atrasado' : 'Pendente'}
+                  {fee.isento ? 'Isento' : fee.status === 'pago' ? 'Pago' : fee.status === 'atrasado' ? 'Atrasado' : 'Pendente'}
                 </span>
               </div>
             </div>

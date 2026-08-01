@@ -13,6 +13,8 @@ import { PublicSquad } from '@/screens/public/PublicSquad';
 import { PublicStats } from '@/screens/public/PublicStats';
 import { PublicMatchDetail } from '@/screens/public/PublicMatchDetail';
 import { PublicSponsors } from '@/components/Sponsors';
+import { PublicOpponentDetail } from '@/screens/public/PublicOpponentDetail';
+import { PublicCompetitionDetail } from '@/screens/public/PublicCompetitionDetail';
 import { PlayerLayout } from '@/screens/player/PlayerLayout';
 import { PlayerDashboard } from '@/screens/player/PlayerDashboard';
 import { PlayerMatches } from '@/screens/player/PlayerMatches';
@@ -31,6 +33,8 @@ import { AdminFees } from '@/screens/admin/AdminFees';
 import { AdminFinance } from '@/screens/admin/AdminFinance';
 import { AdminSeasons } from '@/screens/admin/AdminSeasons';
 import { AdminSponsors } from '@/screens/admin/AdminSponsors';
+import { AdminOpponents } from '@/screens/admin/AdminOpponents';
+import { AdminCompetitions } from '@/screens/admin/AdminCompetitions';
 import { AdminMatchDetail } from '@/screens/admin/AdminMatchDetail';
 
 function Routes() {
@@ -89,7 +93,11 @@ function Routes() {
 
 function PublicRoutes({ path }: { path: string }) {
   const matchId = matchRoute(path, '/jogos/:id');
+  const opponentId = matchRoute(path, '/adversario/:id');
+  const competitionId = matchRoute(path, '/competicao/:id');
   if (matchId) return <PublicMatchDetail matchId={matchId} />;
+  if (opponentId) return <PublicOpponentDetail opponentId={opponentId} />;
+  if (competitionId) return <PublicCompetitionDetail competitionId={competitionId} />;
   if (path === '/' || path === '') return <PublicDashboard />;
   if (path === '/jogos') return <PublicMatches />;
   if (path === '/elenco') return <PublicSquad />;
@@ -122,6 +130,8 @@ function AdminRoutes({ path }: { path: string }) {
   if (path === '/admin/financeiro') return <AdminFinance />;
   if (path === '/admin/temporadas') return <AdminSeasons />;
   if (path === '/admin/patrocinadores') return <AdminSponsors />;
+  if (path === '/admin/adversarios') return <AdminOpponents />;
+  if (path === '/admin/competicoes') return <AdminCompetitions />;
   return <AdminDashboard />;
 }
 

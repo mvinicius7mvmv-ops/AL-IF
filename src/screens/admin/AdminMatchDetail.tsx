@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { supabase, Match, MatchEvent, Guest, MatchAttendance, Profile } from '@/lib/supabase';
+import { supabase, Match, MatchEvent, Guest, MatchAttendance, Profile, Opponent, Competition } from '@/lib/supabase';
+import { COMP_TYPES, TYPE_LABELS } from '@/screens/admin/AdminCompetitions';
+import { MATCH_TYPES } from '@/lib/utils';
 import { useRouter } from '@/contexts/RouterContext';
 import { useToast } from '@/contexts/ToastContext';
 import { Modal, ConfirmModal } from '@/components/Modal';
@@ -48,6 +50,14 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
   const [momPlayerId, setMomPlayerId] = useState('');
   const [editMom, setEditMom] = useState(false);
   const [savingMom, setSavingMom] = useState(false);
+  const [opponents, setOpponents] = useState<Opponent[]>([]);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [showNewOpp, setShowNewOpp] = useState(false);
+  const [showNewComp, setShowNewComp] = useState(false);
+  const [newOppName, setNewOppName] = useState('');
+  const [newCompName, setNewCompName] = useState('');
+  const [newCompType, setNewCompType] = useState<Competition['type']>('Championship');
+  const [creatingQuick, setCreatingQuick] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -64,16 +74,20 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
         gols_adversario: (m as Match).gols_adversario != null ? String((m as Match).gols_adversario) : '',
       });
 
-      const [evRes, gRes, aRes, pRes] = await Promise.all([
+      const [evRes, gRes, aRes, pRes, oppRes, compRes] = await Promise.all([
         supabase.from('match_events').select('*, profiles(nome, apelido), guests(nome)').eq('match_id', matchId).order('minuto', { ascending: true, nullsFirst: true }),
         supabase.from('guests').select('*').eq('match_id', matchId).order('nome'),
         supabase.from('match_attendance').select('*, profiles(nome, apelido, foto_url)').eq('match_id', matchId),
         supabase.from('profiles').select('*').eq('status', 'active').order('nome'),
+        supabase.from('opponents').select('*').order('name', { ascending: true }),
+        supabase.from('competitions').select('*').order('name', { ascending: true }),
       ]);
       setEvents(evRes.data || []);
       setGuests(gRes.data || []);
       setAttendance(aRes.data || []);
       setPlayers(pRes.data || []);
+      setOpponents((oppRes.data || []) as Opponent[]);
+      setCompetitions((compRes.data || []) as Competition[]);
     } catch {
       setError('Não foi possível carregar o jogo.');
     } finally {
@@ -90,11 +104,14 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
       const { error } = await supabase.from('matches').update({
         adversario: infoForm.adversario,
         logo_url: infoForm.logo_url || null,
+        opponent_id: infoForm.opponent_id || null,
         data: infoForm.data,
         horario: infoForm.horario || null,
         local: infoForm.local || null,
         competicao: infoForm.competicao || null,
+        competition_id: infoForm.competition_id || null,
         segunda_competicao: showSecondComp ? (infoForm.segunda_competicao || null) : null,
+        segunda_competition_id: showSecondComp ? (infoForm.segunda_competition_id || null) : null,
         tipo: infoForm.tipo,
         observacoes: infoForm.observacoes || null,
         updated_at: new Date().toISOString(),
@@ -395,8 +412,35 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
           </>
         ) : (
           <div className="space-y-3">
-            <div><label className="label">Adversário</label><input className="input" value={infoForm.adversario || ''} onChange={e => setInfoForm(f => ({ ...f, adversario: e.target.value }))} /></div>
-            <div><label className="label">URL do escudo</label><input className="input" value={infoForm.logo_url || ''} onChange={e => setInfoForm(f => ({ ...f, logo_url: e.target.value }))} /></div>
+            <div>
+              <label className="label">Adversário</label>
+              {!showNewOpp ? (
+                <div className="flex gap-2">
+                  <select className="input flex-1" value={infoForm.opponent_id || ''} onChange={e => {
+                    const o = opponents.find(x => x.id === e.target.value);
+                    setInfoForm(f => ({ ...f, opponent_id: e.target.value || null, adversario: o?.name || '', logo_url: o?.logo_url || '' }));
+                  }}>
+                    <option value="">Selecione</option>
+                    {opponents.filter(o => o.active).map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
+                  </select>
+                  <button type="button" onClick={() => setShowNewOpp(true)} className="btn-secondary text-xs whitespace-nowrap"><Plus size={14} /> Novo</button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input className="input flex-1" placeholder="Nome" value={newOppName} onChange={e => setNewOppName(e.target.value)} autoFocus />
+                  <button type="button" onClick={async () => {
+                    if (!newOppName.trim()) return;
+                    setCreatingQuick(true);
+                    try {
+                      const { data } = await supabase.from('opponents').insert({ name: newOppName.trim(), active: true }).select().single();
+                      if (data) { setOpponents(p => [...p, data as Opponent].sort((a, b) => a.name.localeCompare(b.name))); setInfoForm(f => ({ ...f, opponent_id: data.id, adversario: data.name })); }
+                      setShowNewOpp(false); setNewOppName('');
+                    } catch { } finally { setCreatingQuick(false); }
+                  }} disabled={creatingQuick} className="btn-primary text-xs whitespace-nowrap">{creatingQuick ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Criar</button>
+                  <button type="button" onClick={() => { setShowNewOpp(false); setNewOppName(''); }} className="btn-ghost text-red-400"><X size={16} /></button>
+                </div>
+              )}
+            </div>
             <div className="grid sm:grid-cols-2 gap-3">
               <div><label className="label">Data</label><input className="input" type="date" value={infoForm.data || ''} onChange={e => setInfoForm(f => ({ ...f, data: e.target.value }))} /></div>
               <div><label className="label">Horário</label><input className="input" type="time" value={infoForm.horario?.slice(0,5) || ''} onChange={e => setInfoForm(f => ({ ...f, horario: e.target.value }))} /></div>
@@ -404,20 +448,60 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
             <div><label className="label">Local</label><input className="input" value={infoForm.local || ''} onChange={e => setInfoForm(f => ({ ...f, local: e.target.value }))} /></div>
             <div>
               <label className="label">Competição</label>
-              <input className="input" value={infoForm.competicao || ''} onChange={e => setInfoForm(f => ({ ...f, competicao: e.target.value }))} />
-              {!showSecondComp ? (
-                <button type="button" onClick={() => setShowSecondComp(true)} className="mt-2 text-red-500 text-sm font-medium flex items-center gap-1"><Plus size={14} /> Adicionar segunda competição</button>
+              {!showNewComp ? (
+                <div className="flex gap-2">
+                  <select className="input flex-1" value={infoForm.competition_id || ''} onChange={e => {
+                    const c = competitions.find(x => x.id === e.target.value);
+                    setInfoForm(f => ({ ...f, competition_id: e.target.value || null, competicao: c?.name || '' }));
+                  }}>
+                    <option value="">Selecione</option>
+                    {competitions.filter(c => c.active).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                  <button type="button" onClick={() => setShowNewComp(true)} className="btn-secondary text-xs whitespace-nowrap"><Plus size={14} /> Nova</button>
+                </div>
               ) : (
+                <div className="flex gap-2">
+                  <input className="input flex-1" placeholder="Nome" value={newCompName} onChange={e => setNewCompName(e.target.value)} autoFocus />
+                  <select className="input w-32" value={newCompType} onChange={e => setNewCompType(e.target.value as Competition['type'])}>
+                    {COMP_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+                  </select>
+                  <button type="button" onClick={async () => {
+                    if (!newCompName.trim()) return;
+                    setCreatingQuick(true);
+                    try {
+                      const { data } = await supabase.from('competitions').insert({ name: newCompName.trim(), type: newCompType, active: true }).select().single();
+                      if (data) { setCompetitions(p => [...p, data as Competition].sort((a, b) => a.name.localeCompare(b.name))); setInfoForm(f => ({ ...f, competition_id: data.id, competicao: data.name })); }
+                      setShowNewComp(false); setNewCompName('');
+                    } catch { } finally { setCreatingQuick(false); }
+                  }} disabled={creatingQuick} className="btn-primary text-xs whitespace-nowrap">{creatingQuick ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Criar</button>
+                  <button type="button" onClick={() => { setShowNewComp(false); setNewCompName(''); }} className="btn-ghost text-red-400"><X size={16} /></button>
+                </div>
+              )}
+              {!showSecondComp && !showNewComp && (
+                <button type="button" onClick={() => setShowSecondComp(true)} className="mt-2 text-red-500 text-sm font-medium flex items-center gap-1"><Plus size={14} /> Adicionar segunda competição</button>
+              )}
+              {showSecondComp && !showNewComp && (
                 <div className="mt-2">
                   <label className="label">Segunda competição</label>
                   <div className="flex gap-2">
-                    <input className="input" value={infoForm.segunda_competicao || ''} onChange={e => setInfoForm(f => ({ ...f, segunda_competicao: e.target.value }))} />
-                    <button type="button" onClick={() => { setShowSecondComp(false); setInfoForm(f => ({ ...f, segunda_competicao: null })); }} className="btn-ghost text-red-400"><X size={16} /></button>
+                    <select className="input flex-1" value={infoForm.segunda_competition_id || ''} onChange={e => {
+                      const c = competitions.find(x => x.id === e.target.value);
+                      setInfoForm(f => ({ ...f, segunda_competition_id: e.target.value || null, segunda_competicao: c?.name || '' }));
+                    }}>
+                      <option value="">Selecione</option>
+                      {competitions.filter(c => c.active && c.id !== infoForm.competition_id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <button type="button" onClick={() => { setShowSecondComp(false); setInfoForm(f => ({ ...f, segunda_competicao: null, segunda_competition_id: null })); }} className="btn-ghost text-red-400"><X size={16} /></button>
                   </div>
                 </div>
               )}
             </div>
-            <div><label className="label">Tipo</label><input className="input" value={infoForm.tipo || ''} onChange={e => setInfoForm(f => ({ ...f, tipo: e.target.value }))} /></div>
+            <div>
+              <label className="label">Tipo</label>
+              <select className="input" value={infoForm.tipo || 'Amistoso'} onChange={e => setInfoForm(f => ({ ...f, tipo: e.target.value }))}>
+                {MATCH_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
             <div><label className="label">Observações</label><textarea className="input min-h-[60px]" value={infoForm.observacoes || ''} onChange={e => setInfoForm(f => ({ ...f, observacoes: e.target.value }))} /></div>
             <button onClick={saveInfo} className="btn-primary w-full" disabled={savingInfo}>
               {savingInfo && <Loader2 size={16} className="animate-spin" />} Salvar informações

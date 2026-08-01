@@ -42,6 +42,9 @@ export interface Match {
   season_id: string;
   adversario: string;
   logo_url: string | null;
+  opponent_id: string | null;
+  competition_id: string | null;
+  segunda_competition_id: string | null;
   data: string;
   horario: string | null;
   local: string | null;
@@ -96,6 +99,8 @@ export interface MonthlyFee {
   status: 'pago' | 'pendente' | 'atrasado';
   pago_em: string | null;
   observacao: string | null;
+  confirmado_por: string | null;
+  isento: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -132,6 +137,28 @@ export interface Sponsor {
   instagram_url: string | null;
   description: string | null;
   display_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Opponent {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  city: string | null;
+  state: string | null;
+  notes: string | null;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Competition {
+  id: string;
+  name: string;
+  logo_url: string | null;
+  type: 'Championship' | 'Cup' | 'League' | 'Friendly' | 'Tournament' | 'Other';
   active: boolean;
   created_at: string;
   updated_at: string;

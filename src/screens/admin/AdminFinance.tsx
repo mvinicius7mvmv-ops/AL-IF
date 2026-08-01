@@ -4,7 +4,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Modal, ConfirmModal } from '@/components/Modal';
 import { Loading, EmptyState, ErrorState } from '@/components/States';
 import { formatDate, cn } from '@/lib/utils';
-import { Plus, Edit2, Trash2, Loader2, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { Plus, Edit2, Trash2, Loader2, TrendingUp, TrendingDown, Wallet, Calendar } from 'lucide-react';
 
 const CATEGORIES = ['Mensalidades', 'Patrocínio', 'Doação', 'Bingo', 'Evento', 'Uniforme', 'Transporte', 'Alimentação', 'Arbitragem', 'Campo', 'Outro'];
 
@@ -20,17 +20,43 @@ export function AdminFinance() {
   const [form, setForm] = useState({ tipo: 'receita' as FinanceEntry['tipo'], categoria: '', descricao: '', valor: '', data: '', observacao: '', related_player_id: '' });
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FinanceEntry | null>(null);
+  const [feeSummary, setFeeSummary] = useState<{ expected: number; collected: number; pending: number; pct: number } | null>(null);
+  const [feeMonthly, setFeeMonthly] = useState<{ label: string; collected: number; expected: number }[]>([]);
 
   async function load() {
     setLoading(true);
     setError('');
     try {
-      const [eRes, pRes] = await Promise.all([
+      const [eRes, pRes, feeRes] = await Promise.all([
         supabase.from('finance_entries').select('*').order('data', { ascending: false }),
         supabase.from('profiles').select('*').eq('status', 'active').order('nome'),
+        supabase.from('monthly_fees').select('valor, status, isento, competencia'),
       ]);
       setEntries(eRes.data || []);
       setPlayers(pRes.data || []);
+      const allFees = (feeRes.data || []) as any[];
+      const now = new Date();
+      const currentComp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentFees = allFees.filter(f => f.competencia?.startsWith(currentComp));
+      const expected = currentFees.filter(f => !f.isento).reduce((s, f) => s + Number(f.valor), 0);
+      const collected = currentFees.filter(f => f.status === 'pago').reduce((s, f) => s + Number(f.valor), 0);
+      const pending = expected - collected;
+      const pct = expected > 0 ? Math.round((collected / expected) * 100) : 0;
+      setFeeSummary({ expected, collected, pending, pct });
+      // Monthly evolution (last 6 months)
+      const monthly: { label: string; collected: number; expected: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const comp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString('pt-BR', { month: 'short' });
+        const monthFees = allFees.filter(f => f.competencia?.startsWith(comp));
+        monthly.push({
+          label,
+          collected: monthFees.filter(f => f.status === 'pago').reduce((s, f) => s + Number(f.valor), 0),
+          expected: monthFees.filter(f => !f.isento).reduce((s, f) => s + Number(f.valor), 0),
+        });
+      }
+      setFeeMonthly(monthly);
     } catch {
       setError('Não foi possível carregar o financeiro.');
     } finally {
@@ -107,6 +133,44 @@ export function AdminFinance() {
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold text-white">Financeiro</h1>
+
+      {/* Monthly Fees Dashboard */}
+      {feeSummary && (
+        <div className="card p-5">
+          <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2"><Wallet size={16} className="text-red-400" /> Mensalidades - Mês Atual</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            <div><p className="stat-label">Esperado</p><p className="text-lg font-bold text-white tabular-nums mt-1">R$ {feeSummary.expected.toFixed(2)}</p></div>
+            <div><p className="stat-label">Arrecadado</p><p className="text-lg font-bold text-green-400 tabular-nums mt-1">R$ {feeSummary.collected.toFixed(2)}</p></div>
+            <div><p className="stat-label">Pendente</p><p className="text-lg font-bold text-yellow-400 tabular-nums mt-1">R$ {feeSummary.pending.toFixed(2)}</p></div>
+            <div><p className="stat-label">Aproveit.</p><p className="text-lg font-bold text-red-400 tabular-nums mt-1">{feeSummary.pct}%</p></div>
+          </div>
+          {feeMonthly.length > 0 && (
+            <div>
+              <p className="stat-label mb-3">Evolução mensal (6 meses)</p>
+              <div className="flex items-end gap-2 h-24">
+                {feeMonthly.map((m, i) => {
+                  const maxVal = Math.max(...feeMonthly.map(x => Math.max(x.collected, x.expected)), 1);
+                  const colH = (m.collected / maxVal) * 100;
+                  const expH = (m.expected / maxVal) * 100;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                      <div className="relative w-full flex-1 flex items-end justify-center">
+                        <div className="absolute bottom-0 w-full bg-neutral-700/40 rounded-t" style={{ height: `${expH}%` }} />
+                        <div className="relative w-3/4 bg-green-500 rounded-t transition-all" style={{ height: `${colH}%` }} />
+                      </div>
+                      <p className="text-neutral-600 text-[10px] capitalize">{m.label}</p>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex gap-4 mt-2 justify-center">
+                <span className="text-xs text-neutral-500 flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-green-500" /> Arrecadado</span>
+                <span className="text-xs text-neutral-500 flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-neutral-700" /> Esperado</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <div className="card p-4">

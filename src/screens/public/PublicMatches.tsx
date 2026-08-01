@@ -98,6 +98,7 @@ export function PublicMatches() {
 export function MatchCard({ match, onClick }: { match: Match; onClick: () => void }) {
   const isCompleted = match.status === 'completed';
   const isCancelled = match.status === 'cancelled';
+  const oppLogo = match.logo_url;
   return (
     <button
       onClick={onClick}
@@ -114,6 +115,11 @@ export function MatchCard({ match, onClick }: { match: Match; onClick: () => voi
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <Crest size={40} className="shrink-0" />
+          {oppLogo ? (
+            <div className="w-10 h-10 rounded-full bg-neutral-800 overflow-hidden shrink-0 border border-neutral-700">
+              <img src={oppLogo} alt={match.adversario} className="w-full h-full object-contain p-0.5" />
+            </div>
+          ) : null}
           <div className="min-w-0">
             <p className="text-[10px] text-neutral-500 uppercase tracking-wide">AL-IF FC vs</p>
             <p className="text-white font-bold truncate">{match.adversario}</p>

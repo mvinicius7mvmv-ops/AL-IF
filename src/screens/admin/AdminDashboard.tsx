@@ -4,7 +4,7 @@ import { useRouter } from '@/contexts/RouterContext';
 import { Loading, ErrorState, EmptyState } from '@/components/States';
 import { Crest } from '@/components/Crest';
 import { formatDate } from '@/lib/utils';
-import { Calendar, Users, Trophy, Wallet, TrendingUp, Plus, ArrowRight } from 'lucide-react';
+import { Calendar, Users, Trophy, Wallet, TrendingUp, Plus, ArrowRight, Shield } from 'lucide-react';
 import { HallOfFame } from '@/components/HallOfFame';
 import { SponsorCarousel } from '@/components/Sponsors';
 
@@ -99,7 +99,7 @@ export function AdminDashboard() {
         <QuickAction icon={<Plus size={18} />} label="Novo Jogo" onClick={() => navigate('/admin/jogos?novo=1')} />
         <QuickAction icon={<Users size={18} />} label="Novo Jogador" onClick={() => navigate('/admin/jogadores?novo=1')} />
         <QuickAction icon={<Wallet size={18} />} label="Mensalidades" onClick={() => navigate('/admin/mensalidades')} />
-        <QuickAction icon={<Trophy size={18} />} label="Temporadas" onClick={() => navigate('/admin/temporadas')} />
+        <QuickAction icon={<Shield size={18} />} label="Adversários" onClick={() => navigate('/admin/adversarios')} />
       </div>
 
       {/* Stats overview */}
