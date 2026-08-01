@@ -71,7 +71,7 @@ export function AdminFees() {
         return;
       }
 
-      const vencimento = new Date(year, month, 5).toISOString().slice(0, 10);
+      const vencimento = new Date(year, month, 0).toISOString().slice(0, 10);
       const defaultValor = 25;
 
       const records = toCreate.map(p => ({
