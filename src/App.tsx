@@ -72,7 +72,7 @@ function Routes() {
   }
 
   // Player routes (protected)
-  if (path.startsWith('/jogador')) {
+  if (path.startsWith('/jogador/') || path === '/jogador') {
     if (!user || !profile) {
       navigate('/entrar');
       return <FullPageLoading />;
