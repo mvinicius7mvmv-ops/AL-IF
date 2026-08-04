@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase, Profile } from '@/lib/supabase';
+import { useRouter } from '@/contexts/RouterContext';
 import { Loading, EmptyState, ErrorState } from '@/components/States';
 import { Users } from 'lucide-react';
 
 export function PublicSquad() {
+  const { navigate } = useRouter();
   const [players, setPlayers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,7 +49,11 @@ export function PublicSquad() {
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {players.map(p => (
-            <div key={p.id} className="card p-4 text-center group hover:border-red-600/50 transition-colors">
+            <div
+              key={p.id}
+              onClick={() => navigate(`/jogadores/${p.id}`)}
+              className="card p-4 text-center group hover:border-red-600/50 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:shadow-red-950/20"
+            >
               <div className="w-20 h-20 mx-auto rounded-full bg-neutral-800 overflow-hidden border-2 border-neutral-700 group-hover:border-red-600/50 transition-colors">
                 {p.foto_url ? (
                   <img src={p.foto_url} alt={p.nome} className="w-full h-full object-cover" />

@@ -15,6 +15,7 @@ import { PublicMatchDetail } from '@/screens/public/PublicMatchDetail';
 import { PublicSponsors } from '@/components/Sponsors';
 import { PublicOpponentDetail } from '@/screens/public/PublicOpponentDetail';
 import { PublicCompetitionDetail } from '@/screens/public/PublicCompetitionDetail';
+import { PlayerProfileDetail } from '@/screens/public/PlayerProfileDetail';
 import { PlayerLayout } from '@/screens/player/PlayerLayout';
 import { PlayerDashboard } from '@/screens/player/PlayerDashboard';
 import { PlayerMatches } from '@/screens/player/PlayerMatches';
@@ -93,9 +94,11 @@ function Routes() {
 
 function PublicRoutes({ path }: { path: string }) {
   const matchId = matchRoute(path, '/jogos/:id');
+  const playerId = matchRoute(path, '/jogadores/:id');
   const opponentId = matchRoute(path, '/adversario/:id');
   const competitionId = matchRoute(path, '/competicao/:id');
   if (matchId) return <PublicMatchDetail matchId={matchId} />;
+  if (playerId) return <PlayerProfileDetail playerId={playerId} />;
   if (opponentId) return <PublicOpponentDetail opponentId={opponentId} />;
   if (competitionId) return <PublicCompetitionDetail competitionId={competitionId} />;
   if (path === '/' || path === '') return <PublicDashboard />;
@@ -108,7 +111,9 @@ function PublicRoutes({ path }: { path: string }) {
 
 function PlayerRoutes({ path }: { path: string }) {
   const matchId = matchRoute(path, '/jogador/jogos/:id');
+  const playerId = matchRoute(path, '/jogadores/:id');
   if (matchId) return <PlayerMatchDetail matchId={matchId} />;
+  if (playerId) return <PlayerProfileDetail playerId={playerId} />;
   if (path === '/jogador') return <PlayerDashboard />;
   if (path === '/jogador/jogos') return <PlayerMatches />;
   if (path === '/jogador/elenco') return <PlayerSquad />;
@@ -121,7 +126,9 @@ function PlayerRoutes({ path }: { path: string }) {
 
 function AdminRoutes({ path }: { path: string }) {
   const matchId = matchRoute(path, '/admin/jogos/:id');
+  const playerId = matchRoute(path, '/admin/jogadores/:id');
   if (matchId) return <AdminMatchDetail matchId={matchId} />;
+  if (playerId) return <PlayerProfileDetail playerId={playerId} />;
   if (path === '/admin') return <AdminDashboard />;
   if (path === '/admin/jogos') return <AdminMatches />;
   if (path === '/admin/jogadores') return <AdminPlayers />;
