@@ -5,6 +5,55 @@ import { Globe, Instagram, ArrowRight, ChevronLeft, ChevronRight, Handshake } fr
 
 const SLIDE_INTERVAL = 5000;
 
+export function SponsorStrip() {
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const { data } = await supabase
+          .from('sponsors')
+          .select('*')
+          .eq('active', true)
+          .order('display_order', { ascending: true });
+        setSponsors((data || []) as Sponsor[]);
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading || sponsors.length === 0) return null;
+
+  const doubled = [...sponsors, ...sponsors];
+
+  return (
+    <div className="marquee-pause overflow-hidden py-4 border-y border-neutral-800/60">
+      <div className="flex items-center gap-12 animate-marquee" style={{ width: 'max-content' }}>
+        {doubled.map((s, i) => (
+          <div key={`${s.id}-${i}`} className="flex items-center gap-3 shrink-0">
+            {s.logo_url ? (
+              <img
+                src={s.logo_url}
+                alt={s.name}
+                className="h-8 w-auto max-w-[140px] object-contain opacity-70 hover:opacity-100 transition-opacity"
+              />
+            ) : (
+              <span className="text-neutral-500 text-sm font-bold opacity-70 hover:opacity-100 transition-opacity">
+                {s.name}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function SponsorCarousel() {
   const { navigate } = useRouter();
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
