@@ -219,7 +219,10 @@ export function TeamDashboard({ data, loading, error, reload, linkPrefix }: {
                       <span className="text-neutral-600 text-xs">x</span>
                       <span className="text-2xl font-bold text-white tabular-nums">{m.gols_adversario ?? 0}</span>
                     </div>
-                    <span className="text-neutral-300 text-xs font-medium truncate max-w-[80px] text-right">{m.adversario}</span>
+                    <div className="flex items-center gap-2 justify-end min-w-0">
+                      <span className="text-neutral-300 text-xs font-medium truncate max-w-[80px] text-right">{m.adversario}</span>
+                      <OpponentLogo url={m.logo_url} name={m.adversario} size={32} rounded="rounded-lg" />
+                    </div>
                   </div>
                   {m.competicao && <p className="text-red-400/70 text-[10px] mt-2 font-medium">{m.competicao}</p>}
                 </button>
@@ -249,6 +252,9 @@ export function TeamDashboard({ data, loading, error, reload, linkPrefix }: {
                       <p className="text-xs text-neutral-500">AL-IF FC vs</p>
                       <p className="text-white font-bold">{m.adversario}</p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <OpponentLogo url={m.logo_url} name={m.adversario} size={40} rounded="rounded-lg" />
                   </div>
                   <div className="text-right">
                     <p className="text-white font-bold text-sm">{formatDate(m.data)}</p>
@@ -285,6 +291,27 @@ export function TeamDashboard({ data, loading, error, reload, linkPrefix }: {
           />
         </div>
       </section>
+    </div>
+  );
+}
+
+function OpponentLogo({ url, name, size = 56, rounded = 'rounded-xl' }: { url: string | null; name: string; size?: number; rounded?: string }) {
+  if (url) {
+    return (
+      <img
+        src={url}
+        alt={name}
+        style={{ width: size, height: size }}
+        className={`shrink-0 object-contain ${rounded} bg-neutral-800 border border-neutral-700 p-1`}
+      />
+    );
+  }
+  return (
+    <div
+      style={{ width: size, height: size }}
+      className={`shrink-0 ${rounded} bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-600 font-bold`}
+    >
+      {name?.charAt(0).toUpperCase() ?? '?'}
     </div>
   );
 }
@@ -336,9 +363,7 @@ function NextMatchHero({ match, linkPrefix, navigate }: { match: Match | null; l
             </div>
             <div className="text-neutral-700 text-2xl font-bold">VS</div>
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-600 font-bold text-lg shrink-0">
-                {match.adversario?.charAt(0).toUpperCase() ?? '?'}
-              </div>
+              <OpponentLogo url={match.logo_url} name={match.adversario} size={56} />
               <div>
                 <p className="text-neutral-500 text-xs">Visitante</p>
                 <p className="text-white font-bold text-sm truncate max-w-[120px]">{match.adversario}</p>
