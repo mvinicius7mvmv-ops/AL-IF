@@ -3,11 +3,28 @@ import { supabase, Sponsor } from '@/lib/supabase';
 import { useRouter } from '@/contexts/RouterContext';
 import { Globe, Instagram, ArrowRight, ChevronLeft, ChevronRight, Handshake } from 'lucide-react';
 
-const SLIDE_INTERVAL = 5000;
+const SLIDE_INTERVAL = 3000;
+
+function useVisibleCount() {
+  const [count, setCount] = useState(3);
+  useEffect(() => {
+    const update = () => {
+      const w = window.innerWidth;
+      setCount(w < 640 ? 1 : w < 1024 ? 2 : 3);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+  return count;
+}
 
 export function SponsorStrip() {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [offset, setOffset] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const visibleCount = useVisibleCount();
 
   useEffect(() => {
     async function load() {
@@ -27,31 +44,73 @@ export function SponsorStrip() {
     load();
   }, []);
 
+  useEffect(() => {
+    if (sponsors.length <= visibleCount || paused) return;
+    const timer = setInterval(() => {
+      setOffset(prev => (prev + 1) % sponsors.length);
+    }, SLIDE_INTERVAL);
+    return () => clearInterval(timer);
+  }, [sponsors.length, paused, visibleCount]);
+
+  useEffect(() => {
+    setOffset(0);
+  }, [visibleCount]);
+
   if (loading || sponsors.length === 0) return null;
 
-  const doubled = [...sponsors, ...sponsors];
+  const itemPercent = 100 / visibleCount;
+  const tripled = [...sponsors, ...sponsors, ...sponsors];
 
   return (
-    <div className="marquee-pause overflow-hidden py-4 border-y border-neutral-800/60">
-      <div className="flex items-center gap-12 animate-marquee" style={{ width: 'max-content' }}>
-        {doubled.map((s, i) => (
-          <div key={`${s.id}-${i}`} className="flex items-center gap-3 shrink-0">
-            {s.logo_url ? (
-              <img
-                src={s.logo_url}
-                alt={s.name}
-                className="h-8 w-auto max-w-[140px] object-contain opacity-70 hover:opacity-100 transition-opacity"
-              />
-            ) : (
-              <span className="text-neutral-500 text-sm font-bold opacity-70 hover:opacity-100 transition-opacity">
-                {s.name}
-              </span>
-            )}
-          </div>
-        ))}
+    <div
+      className="my-6 md:my-10 select-none"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <p className="text-center text-[10px] md:text-xs font-semibold uppercase tracking-[0.25em] text-neutral-500 mb-5">
+        Patrocinadores Oficiais
+      </p>
+      <div className="overflow-hidden px-4">
+        <div
+          className="flex transition-transform duration-700 ease-in-out"
+          style={{ transform: `translateX(-${offset * itemPercent}%)` }}
+        >
+          {tripled.map((s, i) => (
+            <div
+              key={`${s.id}-${i}`}
+              className="shrink-0 flex items-center justify-center px-4 md:px-12"
+              style={{ width: `${itemPercent}%` }}
+            >
+              <SponsorLogo sponsor={s} />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
+}
+
+function SponsorLogo({ sponsor }: { sponsor: Sponsor }) {
+  const link = sponsor.website_url || sponsor.instagram_url;
+  const content = sponsor.logo_url ? (
+    <img
+      src={sponsor.logo_url}
+      alt={sponsor.name}
+      className="h-[80px] md:h-[90px] w-auto max-w-full object-contain opacity-85 hover:opacity-100 transition-opacity duration-300"
+    />
+  ) : (
+    <span className="text-xl md:text-2xl font-bold text-neutral-400 opacity-85 hover:opacity-100 transition-opacity duration-300">
+      {sponsor.name}
+    </span>
+  );
+  if (link) {
+    return (
+      <a href={link} target="_blank" rel="noopener noreferrer" className="block">
+        {content}
+      </a>
+    );
+  }
+  return content;
 }
 
 export function SponsorCarousel() {
