@@ -37,6 +37,7 @@ import { AdminSponsors } from '@/screens/admin/AdminSponsors';
 import { AdminOpponents } from '@/screens/admin/AdminOpponents';
 import { AdminCompetitions } from '@/screens/admin/AdminCompetitions';
 import { AdminMatchDetail } from '@/screens/admin/AdminMatchDetail';
+import { AdminMatchCards } from '@/screens/admin/AdminMatchCards';
 
 function Routes() {
   const { path, navigate } = useRouter();
@@ -139,6 +140,7 @@ function AdminRoutes({ path }: { path: string }) {
   if (path === '/admin/patrocinadores') return <AdminSponsors />;
   if (path === '/admin/adversarios') return <AdminOpponents />;
   if (path === '/admin/competicoes') return <AdminCompetitions />;
+  if (path === '/admin/cards') return <AdminMatchCards />;
   return <AdminDashboard />;
 }
 

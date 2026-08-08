@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Calendar, Users, BarChart3, Wallet,
   Trophy, UserCog, LogOut, Menu, X, Settings, Handshake, Shield,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -20,6 +21,7 @@ const adminNav = [
   { label: 'Adversários', path: '/admin/adversarios', icon: Shield },
   { label: 'Competições', path: '/admin/competicoes', icon: Trophy },
   { label: 'Patrocinadores', path: '/admin/patrocinadores', icon: Handshake },
+  { label: 'Cards de Jogos', path: '/admin/cards', icon: ImageIcon },
 ];
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
