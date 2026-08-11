@@ -58,7 +58,16 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
   .eq('match_id', matchId),
       ]);
       setEvents(evRes.data || []);
-      setMyAttendance((attRes.data as any)?.resposta);
+
+const attendanceData = (attRes.data || []) as any[];
+
+setMyAttendance(
+  attendanceData.find(
+    player => player.player_id === profile?.id
+  )?.resposta
+);
+
+setAttendance(attendanceData);
     } catch {
       setError('Não foi possível carregar o jogo.');
     } finally {
