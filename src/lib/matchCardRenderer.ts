@@ -342,44 +342,47 @@ export async function renderCompletedCard(
   ctx.lineTo(W / 2 + 40, goalsStartY + 18);
   ctx.stroke();
 
-  const goals = events.filter(e => e.tipo === 'gol');
+ const goals = events.filter(e => e.tipo === 'gol');
 
-  if (goals.length === 0) {
-    ctx.font = '500 28px Inter, system-ui, sans-serif';
-    ctx.fillStyle = COLORS.grayMid;
-    ctx.fillText('Sem gols registrados', W / 2, goalsStartY + 70);
-  } else {
-    const grouped = new Map<string, { name: string; minutes: string[] }>();
-    for (const g of goals) {
-      const name = getEventName(g);
-      const key = name;
-      if (!grouped.has(key)) grouped.set(key, { name, minutes: [] });
-      grouped.get(key)!.minutes.push(g.minuto ? `${g.minuto}'` : '—');
-    }
+if (goals.length === 0) {
+  ctx.font = '500 28px Inter, system-ui, sans-serif';
+  ctx.fillStyle = COLORS.grayMid;
+  ctx.textAlign = 'center';
+  ctx.fillText('Sem gols registrados', W / 2, goalsStartY + 70);
+} else {
+  let y = goalsStartY + 65;
 
-    let y = goalsStartY + 65;
-    ctx.textAlign = 'left';
+  ctx.textAlign = 'left';
+
+  for (const g of goals) {
+    const name = getEventName(g);
+
+    // Ícone do gol
+    ctx.font = '32px Inter, system-ui, sans-serif';
+    ctx.fillStyle = COLORS.white;
+    ctx.fillText('⚽', W / 2 - 280, y + 2);
+
+    // Nome do jogador
     ctx.font = '500 30px Inter, system-ui, sans-serif';
+    ctx.fillStyle = COLORS.white;
+    ctx.fillText(name, W / 2 - 230, y);
 
-    for (const [, info] of grouped) {
-      const minutesStr = info.minutes.join(', ');
-      const text = `${info.name} — ${minutesStr}`;
+    // Minuto — somente se informado
+    if (g.minuto != null) {
+      const nameMetrics = ctx.measureText(name);
 
-      ctx.font = '32px Inter, system-ui, sans-serif';
-      ctx.fillText('⚽', W / 2 - 280, y + 2);
-
-      ctx.font = '500 30px Inter, system-ui, sans-serif';
-      ctx.fillStyle = COLORS.white;
-      ctx.fillText(info.name, W / 2 - 230, y);
-
-      const nameMetrics = ctx.measureText(info.name);
       ctx.font = '500 26px Inter, system-ui, sans-serif';
       ctx.fillStyle = COLORS.grayMid;
-      ctx.fillText(`— ${minutesStr}`, W / 2 - 230 + nameMetrics.width + 16, y);
-
-      y += 52;
+      ctx.fillText(
+        `— ${g.minuto}'`,
+        W / 2 - 230 + nameMetrics.width + 16,
+        y
+      );
     }
+
+    y += 52;
   }
+}
 
   if (match.local) {
     ctx.textAlign = 'center';
