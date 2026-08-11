@@ -357,8 +357,8 @@ function NextMatchHero({ match, linkPrefix, navigate }: { match: Match | null; l
             <div className="flex items-center gap-3">
               <Crest size={56} className="shadow-lg" />
               <div>
-                <p className="text-neutral-500 text-xs">AL-IF FC</p>
-                <p className="text-white font-bold text-sm">Time da Casa</p>
+                <p className="text-neutral-500 text-xs">Time da Casa</p>
+                <p className="text-white font-bold text-sm">AL-IF FC</p>
               </div>
             </div>
             <div className="text-neutral-700 text-2xl font-bold">VS</div>
