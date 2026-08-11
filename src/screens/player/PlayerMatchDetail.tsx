@@ -48,16 +48,18 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
       setMomPlayer(momProfile);
 
       const [evRes, attRes] = await Promise.all([
-        supabase.from('match_events')
-          .select('*, profiles(nome, apelido), guests(nome)')
-          .eq('match_id', matchId)
-          .order('minuto', { ascending: true, nullsFirst: true }),
-      supabase
-  .from('match_attendance')
-  .select('id, player_id, resposta, profiles(nome, apelido, foto_url)')
-  .eq('match_id', matchId),
-      ]);
-      setEvents(evRes.data || []);
+  supabase.from('match_events')
+    .select('*, profiles(nome, apelido), guests(nome)')
+    .eq('match_id', matchId)
+    .order('minuto', { ascending: true, nullsFirst: true }),
+
+  supabase
+    .from('match_attendance')
+    .select('id, player_id, resposta, profiles(nome, apelido, foto_url)')
+    .eq('match_id', matchId),
+]);
+
+setEvents(evRes.data || []);
 
 const attendanceData = (attRes.data || []) as any[];
 
@@ -68,6 +70,7 @@ setMyAttendance(
 );
 
 setAttendance(attendanceData);
+      
     } catch {
       setError('Não foi possível carregar o jogo.');
     } finally {
