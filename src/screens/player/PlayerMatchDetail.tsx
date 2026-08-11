@@ -28,6 +28,11 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
   }[]
 >([]);
   const [momPlayer, setMomPlayer] = useState<Profile | null>(null);
+  const attendanceByStatus = {
+  vou: attendance.filter(a => a.resposta === 'vou'),
+  talvez: attendance.filter(a => a.resposta === 'talvez'),
+  nao_vou: attendance.filter(a => a.resposta === 'nao_vou'),
+};
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
