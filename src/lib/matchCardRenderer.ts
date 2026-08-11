@@ -324,9 +324,19 @@ export async function renderCompletedCard(
   ctx.fillStyle = COLORS.grayMid;
   ctx.fillText(dateStr, W / 2, 650);
 
-  const compName = match.competicao || '';
-  if (compName) {
-    drawCompetitionBadge(ctx, compName, 690);
+  const competitions = [
+  match.competicao,
+  match.segunda_competicao,
+].filter(Boolean) as string[];
+
+if (competitions.length > 0) {
+  let competitionY = 690;
+
+  for (const competition of competitions) {
+    drawCompetitionBadge(ctx, competition, competitionY);
+    competitionY += 58;
+  }
+}
   }
 
   const goalsStartY = 800;
