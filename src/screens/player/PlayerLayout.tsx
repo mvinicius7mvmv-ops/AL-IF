@@ -14,7 +14,6 @@ const playerNav = [
   { label: 'Mensalidades', path: '/jogador/mensalidades', icon: Wallet },
   { label: 'Meu Perfil', path: '/jogador/perfil', icon: UserIcon },
   { label: 'Premiações', path: '/jogador/premiacoes', icon: Trophy },
-  { label: 'Cards de Jogos', path: '/jogador/cards', icon: ImageIcon },
 ];
 
 export function PlayerLayout({ children }: { children: React.ReactNode }) {
