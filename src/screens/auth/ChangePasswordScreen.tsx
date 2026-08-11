@@ -29,21 +29,64 @@ export function ChangePasswordScreen() {
     }
     setLoading(true);
     try {
-      const { error: updErr } = await supabase.auth.updateUser({ password: newPassword });
-      if (updErr) throw updErr;
+      // Garantir que existe uma sessão autenticada antes de alterar a senha
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
+      if (sessionError) {
+        console.error('Erro ao obter sessão:', sessionError);
+        throw sessionError;
+      }
+
+      if (!sessionData.session?.user) {
+        console.error('Nenhuma sessão autenticada encontrada.');
+        setError('Sua sessão expirou. Faça login novamente.');
+        return;
+      }
+
+      // Alterar a senha no Supabase Auth
+      const { error: updErr } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (updErr) {
+        console.error('Erro do Supabase ao alterar senha:', updErr);
+        throw updErr;
+      }
+
+      // Atualizar o perfil somente depois que a senha foi alterada com sucesso
       if (user) {
-        await supabase.from('profiles').update({
-          must_change_password: false,
-          temp_password: null,
-          updated_at: new Date().toISOString(),
-        }).eq('user_id', user.id);
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            must_change_password: false,
+            temp_password: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id);
+
+        if (profileError) {
+          console.error('Erro ao atualizar perfil:', profileError);
+          throw profileError;
+        }
       }
 
       showToast('Senha alterada com sucesso!', 'success');
       navigate('/');
-    } catch {
-      setError('Erro ao alterar senha. Tente novamente.');
+    } catch (err: any) {
+      console.error('Erro completo ao alterar senha:', err);
+
+      const message = err?.message || '';
+
+      if (message.toLowerCase().includes('password')) {
+        setError('A nova senha não pôde ser definida. Verifique os requisitos da senha.');
+      } else if (
+        message.toLowerCase().includes('session') ||
+        message.toLowerCase().includes('jwt')
+      ) {
+        setError('Sua sessão expirou. Faça login novamente.');
+      } else {
+        setError('Erro ao alterar senha. Tente novamente.');
+      }
     } finally {
       setLoading(false);
     }
