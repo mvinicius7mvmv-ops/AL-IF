@@ -324,19 +324,10 @@ export async function renderCompletedCard(
   ctx.fillStyle = COLORS.grayMid;
   ctx.fillText(dateStr, W / 2, 650);
 
-const competitions = [
-  match.competicao,
-  match.segunda_competicao,
-].filter(Boolean) as string[];
-
-if (competitions.length > 0) {
-  let competitionY = 690;
-
-  for (const competition of competitions) {
-    drawCompetitionBadge(ctx, competition, competitionY);
-    competitionY += 58;
+  const compName = match.competicao || '';
+  if (compName) {
+    drawCompetitionBadge(ctx, compName, 690);
   }
-}
 
   const goalsStartY = 800;
   ctx.textAlign = 'center';
@@ -351,47 +342,44 @@ if (competitions.length > 0) {
   ctx.lineTo(W / 2 + 40, goalsStartY + 18);
   ctx.stroke();
 
- const goals = events.filter(e => e.tipo === 'gol');
+  const goals = events.filter(e => e.tipo === 'gol');
 
-if (goals.length === 0) {
-  ctx.font = '500 28px Inter, system-ui, sans-serif';
-  ctx.fillStyle = COLORS.grayMid;
-  ctx.textAlign = 'center';
-  ctx.fillText('Sem gols registrados', W / 2, goalsStartY + 70);
-} else {
-  let y = goalsStartY + 65;
-
-  ctx.textAlign = 'left';
-
-  for (const g of goals) {
-    const name = getEventName(g);
-
-    // Ícone do gol
-    ctx.font = '32px Inter, system-ui, sans-serif';
-    ctx.fillStyle = COLORS.white;
-    ctx.fillText('⚽', W / 2 - 280, y + 2);
-
-    // Nome do jogador
-    ctx.font = '500 30px Inter, system-ui, sans-serif';
-    ctx.fillStyle = COLORS.white;
-    ctx.fillText(name, W / 2 - 230, y);
-
-    // Minuto — somente se informado
-    if (g.minuto != null) {
-      const nameMetrics = ctx.measureText(name);
-
-      ctx.font = '500 26px Inter, system-ui, sans-serif';
-      ctx.fillStyle = COLORS.grayMid;
-      ctx.fillText(
-        `— ${g.minuto}'`,
-        W / 2 - 230 + nameMetrics.width + 16,
-        y
-      );
+  if (goals.length === 0) {
+    ctx.font = '500 28px Inter, system-ui, sans-serif';
+    ctx.fillStyle = COLORS.grayMid;
+    ctx.fillText('Sem gols registrados', W / 2, goalsStartY + 70);
+  } else {
+    const grouped = new Map<string, { name: string; minutes: string[] }>();
+    for (const g of goals) {
+      const name = getEventName(g);
+      const key = name;
+      if (!grouped.has(key)) grouped.set(key, { name, minutes: [] });
+      grouped.get(key)!.minutes.push(g.minuto ? `${g.minuto}'` : '—');
     }
 
-    y += 52;
+    let y = goalsStartY + 65;
+    ctx.textAlign = 'left';
+    ctx.font = '500 30px Inter, system-ui, sans-serif';
+
+    for (const [, info] of grouped) {
+      const minutesStr = info.minutes.join(', ');
+      const text = `${info.name} — ${minutesStr}`;
+
+      ctx.font = '32px Inter, system-ui, sans-serif';
+      ctx.fillText('⚽', W / 2 - 280, y + 2);
+
+      ctx.font = '500 30px Inter, system-ui, sans-serif';
+      ctx.fillStyle = COLORS.white;
+      ctx.fillText(info.name, W / 2 - 230, y);
+
+      const nameMetrics = ctx.measureText(info.name);
+      ctx.font = '500 26px Inter, system-ui, sans-serif';
+      ctx.fillStyle = COLORS.grayMid;
+      ctx.fillText(`— ${minutesStr}`, W / 2 - 230 + nameMetrics.width + 16, y);
+
+      y += 52;
+    }
   }
-}
 
   if (match.local) {
     ctx.textAlign = 'center';

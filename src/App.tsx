@@ -122,7 +122,6 @@ function PlayerRoutes({ path }: { path: string }) {
   if (path === '/jogador/mensalidades') return <PlayerFees />;
   if (path === '/jogador/perfil') return <PlayerProfile />;
   if (path === '/jogador/premiacoes') return <PlayerAwards />;
-  if (path === '/jogador/cards') return <AdminMatchCards />;
   return <PlayerDashboard />;
 }
 
