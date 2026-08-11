@@ -15,6 +15,18 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
   const [match, setMatch] = useState<Match | null>(null);
   const [events, setEvents] = useState<(MatchEvent & { profiles?: { nome: string; apelido: string | null } | null; guests?: { nome: string } | null })[]>([]);
   const [myAttendance, setMyAttendance] = useState<string | undefined>();
+  const [attendance, setAttendance] = useState<
+  {
+    id: string;
+    player_id: string;
+    resposta: string;
+    profiles?: {
+      nome: string;
+      apelido: string | null;
+      foto_url?: string | null;
+    } | null;
+  }[]
+>([]);
   const [momPlayer, setMomPlayer] = useState<Profile | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -40,10 +52,14 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
           .select('*, profiles(nome, apelido), guests(nome)')
           .eq('match_id', matchId)
           .order('minuto', { ascending: true, nullsFirst: true }),
-        profile ? supabase.from('match_attendance').select('resposta').eq('match_id', matchId).eq('player_id', profile.id).maybeSingle() : Promise.resolve({ data: null }),
+        supabase
+  .from('match_attendance')
+  .select('id, player_id, resposta, profiles(nome, apelido, foto_url)')
+  .eq('match_id', matchId),
       ]);
       setEvents(evRes.data || []);
       setMyAttendance((attRes.data as any)?.resposta);
+      setAttendance((playersRes.data as any) || []);
     } catch {
       setError('Não foi possível carregar o jogo.');
     } finally {
@@ -56,6 +72,11 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
   if (loading) return <Loading />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!match) return null;
+  const attendanceByStatus = {
+  vou: attendance.filter(a => a.resposta === 'vou'),
+  talvez: attendance.filter(a => a.resposta === 'talvez'),
+  nao_vou: attendance.filter(a => a.resposta === 'nao_vou'),
+};
 
   return (
     <div className="space-y-5">
@@ -126,6 +147,127 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
       {match.status === 'upcoming' && profile && (
         <AttendanceControl matchId={match.id} current={myAttendance as any} onChange={load} />
       )}
+      <div className="card p-5">
+  <div className="flex items-center justify-between mb-4">
+    <div>
+      <h2 className="text-white font-semibold">Lista de presença</h2>
+      <p className="text-neutral-500 text-sm">
+        Acompanhe quem confirmou para o jogo
+      </p>
+    </div>
+  </div>
+
+  <div className="space-y-5">
+
+    {/* CONFIRMADOS */}
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-green-400 font-semibold text-sm">
+          Confirmados
+        </h3>
+        <span className="text-neutral-500 text-sm">
+          {attendanceByStatus.vou.length}
+        </span>
+      </div>
+
+      {attendanceByStatus.vou.length > 0 ? (
+        <div className="space-y-2">
+          {attendanceByStatus.vou.map(player => (
+            <div
+              key={player.id}
+              className="flex items-center gap-3 p-2 rounded-lg bg-neutral-900"
+            >
+              <div className="w-8 h-8 rounded-full bg-neutral-800 flex items-center justify-center overflow-hidden">
+                {player.profiles?.foto_url ? (
+                  <img
+                    src={player.profiles.foto_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-neutral-500 text-xs">
+                    {player.profiles?.nome?.charAt(0)}
+                  </span>
+                )}
+              </div>
+
+              <span className="text-white text-sm">
+                {player.profiles?.apelido || player.profiles?.nome}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-neutral-600 text-sm">
+          Ninguém confirmou ainda.
+        </p>
+      )}
+    </div>
+
+    {/* TALVEZ */}
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-yellow-400 font-semibold text-sm">
+          Talvez
+        </h3>
+        <span className="text-neutral-500 text-sm">
+          {attendanceByStatus.talvez.length}
+        </span>
+      </div>
+
+      {attendanceByStatus.talvez.length > 0 ? (
+        <div className="space-y-2">
+          {attendanceByStatus.talvez.map(player => (
+            <div
+              key={player.id}
+              className="flex items-center gap-3 p-2 rounded-lg bg-neutral-900"
+            >
+              <span className="text-white text-sm">
+                {player.profiles?.apelido || player.profiles?.nome}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-neutral-600 text-sm">
+          Ninguém marcou "talvez".
+        </p>
+      )}
+    </div>
+
+    {/* NÃO VÃO */}
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-red-400 font-semibold text-sm">
+          Não vão
+        </h3>
+        <span className="text-neutral-500 text-sm">
+          {attendanceByStatus.nao_vou.length}
+        </span>
+      </div>
+
+      {attendanceByStatus.nao_vou.length > 0 ? (
+        <div className="space-y-2">
+          {attendanceByStatus.nao_vou.map(player => (
+            <div
+              key={player.id}
+              className="flex items-center gap-3 p-2 rounded-lg bg-neutral-900"
+            >
+              <span className="text-white text-sm">
+                {player.profiles?.apelido || player.profiles?.nome}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-neutral-600 text-sm">
+          Ninguém marcou "não vou".
+        </p>
+      )}
+    </div>
+
+  </div>
+</div>
 
       {/* Man of the Match */}
       {match.status === 'completed' && momPlayer && (
