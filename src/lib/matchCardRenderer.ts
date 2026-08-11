@@ -337,7 +337,6 @@ if (competitions.length > 0) {
     competitionY += 58;
   }
 }
-  }
 
   const goalsStartY = 800;
   ctx.textAlign = 'center';
