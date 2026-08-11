@@ -15,6 +15,18 @@ export function PlayerMatchDetail({ matchId }: { matchId: string }) {
   const [match, setMatch] = useState<Match | null>(null);
   const [events, setEvents] = useState<(MatchEvent & { profiles?: { nome: string; apelido: string | null } | null; guests?: { nome: string } | null })[]>([]);
   const [myAttendance, setMyAttendance] = useState<string | undefined>();
+  const [attendance, setAttendance] = useState<
+  {
+    id: string;
+    player_id: string;
+    resposta: string;
+    profiles?: {
+      nome: string;
+      apelido: string | null;
+      foto_url?: string | null;
+    } | null;
+  }[]
+>([]);
   const [momPlayer, setMomPlayer] = useState<Profile | null>(null);
 
   const [loading, setLoading] = useState(true);
