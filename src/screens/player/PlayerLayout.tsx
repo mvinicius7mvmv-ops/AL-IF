@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from '@/contexts/RouterContext';
 import { Crest } from '@/components/Crest';
 import { cn } from '@/lib/utils';
-import { LogOut, Menu, X, Trophy, Wallet, User as UserIcon, LayoutDashboard, Calendar, Users, BarChart3 } from 'lucide-react';
+import { LogOut, Menu, X, Trophy, Wallet, User as UserIcon, LayoutDashboard, Calendar, Users, BarChart3, ImageIcon } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 const playerNav = [
