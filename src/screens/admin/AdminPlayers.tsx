@@ -514,6 +514,88 @@ Link: ${window.location.origin}/entrar`;
         onConfirm={handleDelete}
         onClose={() => setDeleteTarget(null)}
       />
+      <Modal
+  open={!!resetCreds}
+  onClose={() => {
+    if (!resettingPassword) {
+      setResetCreds(null);
+      setResetCopied(false);
+    }
+  }}
+  title="Senha redefinida"
+  size="md"
+  footer={
+    <div className="flex gap-3">
+      <button
+        onClick={() => {
+          setResetCreds(null);
+          setResetCopied(false);
+        }}
+        className="btn-secondary flex-1"
+      >
+        Fechar
+      </button>
+
+      <button
+        onClick={copyResetCreds}
+        className="btn-primary flex-1"
+      >
+        {resetCopied ? <Check size={16} /> : <Copy size={16} />}
+        {resetCopied ? 'Copiado!' : 'Copiar acesso'}
+      </button>
+    </div>
+  }
+>
+  {resetCreds && (
+    <div className="space-y-4">
+      <div className="p-4 rounded-lg bg-green-900/20 border border-green-800/50">
+        <p className="text-green-400 font-semibold text-sm">
+          Senha redefinida com sucesso!
+        </p>
+        <p className="text-neutral-400 text-xs mt-1">
+          Envie os dados abaixo ao jogador.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <div className="p-3 rounded-lg bg-neutral-800">
+          <p className="text-neutral-500 text-xs">Jogador</p>
+          <p className="text-white text-sm font-semibold">
+            {resetCreds.nome}
+          </p>
+        </div>
+
+        <div className="p-3 rounded-lg bg-neutral-800">
+          <p className="text-neutral-500 text-xs">Telefone</p>
+          <p className="text-white text-sm font-mono">
+            {resetCreds.telefone}
+          </p>
+        </div>
+
+        <div className="p-3 rounded-lg bg-neutral-800 border border-red-600/30">
+          <p className="text-neutral-500 text-xs">
+            Nova senha temporária
+          </p>
+          <p className="text-red-400 text-xl font-bold font-mono tracking-widest">
+            {resetCreds.password}
+          </p>
+        </div>
+
+        <div className="p-3 rounded-lg bg-neutral-800">
+          <p className="text-neutral-500 text-xs">Link de acesso</p>
+          <p className="text-white text-sm font-mono break-all">
+            {window.location.origin}/entrar
+          </p>
+        </div>
+      </div>
+
+      <p className="text-neutral-500 text-xs">
+        Esta é uma senha temporária. No próximo acesso, o jogador será
+        obrigado a cadastrar uma nova senha.
+      </p>
+    </div>
+  )}
+</Modal>
     </div>
   );
 }
