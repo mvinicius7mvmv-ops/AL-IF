@@ -4,7 +4,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Modal, ConfirmModal } from '@/components/Modal';
 import { Loading, EmptyState, ErrorState } from '@/components/States';
 import { normalizePhone, formatPhone, POSITIONS, cn } from '@/lib/utils';
-import { Plus, Users, Search, Edit2, Trash2, Camera, Loader2, Copy, Check, Power, KeyRound } from 'lucide-react';
+import { Plus, Users, Search, Edit2, Trash2, Camera, Loader2, Copy, Check, Power } from 'lucide-react';
 
 const empty = {
   nome: '', apelido: '', numero: '', posicao: '', telefone: '',
@@ -24,10 +24,6 @@ export function AdminPlayers() {
   const [generatedCreds, setGeneratedCreds] = useState<{ telefone: string; password: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
-  const [resetTarget, setResetTarget] = useState<Profile | null>(null);
-  const [resettingPassword, setResettingPassword] = useState(false);
-  const [resetCreds, setResetCreds] = useState<{ nome: string; password: string; telefone: string } | null>(null);
-  const [resetCopied, setResetCopied] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -174,119 +170,14 @@ export function AdminPlayers() {
     }
   }
 
-    function copyResetCreds() {
-    if (!resetCreds) return;
-
-    const text = `AL-IF FC - Acesso ao sistema
-Jogador: ${resetCreds.nome}
-Telefone: ${resetCreds.telefone}
-Nova senha temporária: ${resetCreds.password}
-Link: ${window.location.origin}/entrar`;
-
-    navigator.clipboard.writeText(text);
-
-    setResetCopied(true);
-
-    setTimeout(() => {
-      setResetCopied(false);
-    }, 2000);
-  }
-  
-    async function handleResetPassword() {
-    if (!resetTarget) return;
-
-    setResettingPassword(true);
-
-    try {
-      const apiUrl =
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-player`;
-
-      const sessionRes =
-        await supabase.auth.getSession();
-
-      const resp = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization':
-            `Bearer ${sessionRes.data.session?.access_token}`,
-          'apikey':
-            import.meta.env.VITE_SUPABASE_ANON_KEY,
-        },
-        body: JSON.stringify({
-          action: 'reset_password',
-          user_id: resetTarget.user_id,
-        }),
-      });
-
-      const result = await resp.json();
-
-      if (!resp.ok) {
-        throw new Error(
-          result.error ||
-          'Erro ao redefinir senha'
-        );
-      }
-
-      setResetTarget(null);
-
-      setResetCreds({
-        nome:
-          result.player?.nome ||
-          resetTarget.nome,
-
-        password:
-          result.credentials.password,
-
-        telefone:
-          resetTarget.telefone ||
-          resetTarget.telefone_normalizado ||
-          '',
-      });
-
-      showToast(
-        'Senha redefinida com sucesso!',
-        'success'
-      );
-
-    } catch (e: any) {
-      showToast(
-        e.message ||
-        'Erro ao redefinir senha',
-        'error'
-      );
-    } finally {
-      setResettingPassword(false);
-    }
-  }
-
   async function handleToggleStatus(p: Profile) {
-    const newStatus =
-      p.status === 'active' ? 'inactive' : 'active';
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', p.id);
-
-    if (error) {
-      showToast('Erro ao alterar status', 'error');
-      return;
-    }
-
-    showToast(
-      newStatus === 'active'
-        ? 'Jogador ativado'
-        : 'Jogador desativado',
-      'success'
-    );
-
+    const newStatus = p.status === 'active' ? 'inactive' : 'active';
+    const { error } = await supabase.from('profiles').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', p.id);
+    if (error) { showToast('Erro ao alterar status', 'error'); return; }
+    showToast(newStatus === 'active' ? 'Jogador ativado' : 'Jogador desativado', 'success');
     load();
   }
-  
+
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
@@ -352,91 +243,37 @@ Link: ${window.location.origin}/entrar`;
       ) : filtered.length === 0 ? (
         <EmptyState icon={<Users size={48} />} title="Nenhum jogador" description="Clique em 'Novo Jogador' para começar." />
       ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map(p => (
-            <div
-              key={p.id}
-              className={cn(
-                'card p-4',
-                p.status === 'inactive' && 'opacity-60'
-              )}
-            >
+            <div key={p.id} className={cn('card p-4', p.status === 'inactive' && 'opacity-60')}>
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-full bg-neutral-800 overflow-hidden shrink-0">
                   {p.foto_url ? (
-                    <img
-                      src={p.foto_url}
-                      alt={p.nome}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={p.foto_url} alt={p.nome} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-neutral-600 font-bold">
                       {(p.apelido || p.nome).charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">
-                    {p.apelido || p.nome}
-                  </p>
-
-                  <p className="text-neutral-500 text-xs truncate">
-                    {p.nome}
-                  </p>
-
+                  <p className="text-white font-semibold text-sm truncate">{p.apelido || p.nome}</p>
+                  <p className="text-neutral-500 text-xs truncate">{p.nome}</p>
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    {p.numero != null && (
-                      <span className="badge bg-red-600/15 text-red-400 border border-red-800/40">
-                        #{p.numero}
-                      </span>
-                    )}
-
-                    {p.posicao && (
-                      <span className="text-neutral-500 text-xs">
-                        {p.posicao}
-                      </span>
-                    )}
-
-                    {p.status === 'inactive' && (
-                      <span className="badge bg-neutral-800 text-neutral-400">
-                        Inativo
-                      </span>
-                    )}
+                    {p.numero != null && <span className="badge bg-red-600/15 text-red-400 border border-red-800/40">#{p.numero}</span>}
+                    {p.posicao && <span className="text-neutral-500 text-xs">{p.posicao}</span>}
+                    {p.status === 'inactive' && <span className="badge bg-neutral-800 text-neutral-400">Inativo</span>}
                   </div>
                 </div>
               </div>
-
               <div className="flex gap-1.5 mt-3 pt-3 border-t border-neutral-800">
-                <button
-                  onClick={() => openEdit(p)}
-                  className="btn-ghost flex-1 text-xs"
-                >
-                  <Edit2 size={14} />
-                  Editar
+                <button onClick={() => openEdit(p)} className="btn-ghost flex-1 text-xs">
+                  <Edit2 size={14} /> Editar
                 </button>
-
-                <button
-                  onClick={() => setResetTarget(p)}
-                  className="btn-ghost text-xs"
-                  title="Redefinir senha"
-                >
-                  <KeyRound size={14} />
-                </button>
-
-                <button
-                  onClick={() => handleToggleStatus(p)}
-                  className="btn-ghost text-xs"
-                  title={p.status === 'active' ? 'Desativar' : 'Ativar'}
-                >
+                <button onClick={() => handleToggleStatus(p)} className="btn-ghost text-xs" title={p.status === 'active' ? 'Desativar' : 'Ativar'}>
                   <Power size={14} />
                 </button>
-
-                <button
-                  onClick={() => setDeleteTarget(p)}
-                  className="btn-ghost text-xs text-red-400 hover:bg-red-900/20"
-                  title="Excluir jogador"
-                >
+                <button onClick={() => setDeleteTarget(p)} className="btn-ghost text-xs text-red-400 hover:bg-red-900/20">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -444,7 +281,6 @@ Link: ${window.location.origin}/entrar`;
           ))}
         </div>
       )}
-                
 
       {/* Create/Edit Modal */}
       <Modal
@@ -570,16 +406,7 @@ Link: ${window.location.origin}/entrar`;
           </div>
         )}
       </Modal>
-      <ConfirmModal
-  open={!!resetTarget}
-  title="Redefinir senha"
-  message={`Tem certeza que deseja redefinir a senha de ${resetTarget?.nome}? Uma nova senha temporária será criada e o jogador deverá definir uma nova senha no próximo acesso.`}
-  confirmLabel={resettingPassword ? 'Redefinindo...' : 'Redefinir senha'}
-  onConfirm={handleResetPassword}
-  onClose={() => {
-    if (!resettingPassword) setResetTarget(null);
-  }}
-/>
+
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir jogador"
@@ -589,88 +416,6 @@ Link: ${window.location.origin}/entrar`;
         onConfirm={handleDelete}
         onClose={() => setDeleteTarget(null)}
       />
-      <Modal
-  open={!!resetCreds}
-  onClose={() => {
-    if (!resettingPassword) {
-      setResetCreds(null);
-      setResetCopied(false);
-    }
-  }}
-  title="Senha redefinida"
-  size="md"
-  footer={
-    <div className="flex gap-3">
-      <button
-        onClick={() => {
-          setResetCreds(null);
-          setResetCopied(false);
-        }}
-        className="btn-secondary flex-1"
-      >
-        Fechar
-      </button>
-
-      <button
-        onClick={copyResetCreds}
-        className="btn-primary flex-1"
-      >
-        {resetCopied ? <Check size={16} /> : <Copy size={16} />}
-        {resetCopied ? 'Copiado!' : 'Copiar acesso'}
-      </button>
-    </div>
-  }
->
-  {resetCreds && (
-    <div className="space-y-4">
-      <div className="p-4 rounded-lg bg-green-900/20 border border-green-800/50">
-        <p className="text-green-400 font-semibold text-sm">
-          Senha redefinida com sucesso!
-        </p>
-        <p className="text-neutral-400 text-xs mt-1">
-          Envie os dados abaixo ao jogador.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <div className="p-3 rounded-lg bg-neutral-800">
-          <p className="text-neutral-500 text-xs">Jogador</p>
-          <p className="text-white text-sm font-semibold">
-            {resetCreds.nome}
-          </p>
-        </div>
-
-        <div className="p-3 rounded-lg bg-neutral-800">
-          <p className="text-neutral-500 text-xs">Telefone</p>
-          <p className="text-white text-sm font-mono">
-            {resetCreds.telefone}
-          </p>
-        </div>
-
-        <div className="p-3 rounded-lg bg-neutral-800 border border-red-600/30">
-          <p className="text-neutral-500 text-xs">
-            Nova senha temporária
-          </p>
-          <p className="text-red-400 text-xl font-bold font-mono tracking-widest">
-            {resetCreds.password}
-          </p>
-        </div>
-
-        <div className="p-3 rounded-lg bg-neutral-800">
-          <p className="text-neutral-500 text-xs">Link de acesso</p>
-          <p className="text-white text-sm font-mono break-all">
-            {window.location.origin}/entrar
-          </p>
-        </div>
-      </div>
-
-      <p className="text-neutral-500 text-xs">
-        Esta é uma senha temporária. No próximo acesso, o jogador será
-        obrigado a cadastrar uma nova senha.
-      </p>
-    </div>
-  )}
-</Modal>
     </div>
   );
 }
