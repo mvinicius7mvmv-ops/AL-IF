@@ -4,7 +4,7 @@ import { useToast } from '@/contexts/ToastContext';
 import { Modal, ConfirmModal } from '@/components/Modal';
 import { Loading, EmptyState, ErrorState } from '@/components/States';
 import { normalizePhone, formatPhone, POSITIONS, cn } from '@/lib/utils';
-import { Plus, Users, Search, Edit2, Trash2, Camera, Loader2, Copy, Check, Power } from 'lucide-react';
+import { Plus, Users, Search, Edit2, Trash2, Camera, Loader2, Copy, Check, Power, KeyRound } from 'lucide-react';
 
 const empty = {
   nome: '', apelido: '', numero: '', posicao: '', telefone: '',
@@ -24,6 +24,10 @@ export function AdminPlayers() {
   const [generatedCreds, setGeneratedCreds] = useState<{ telefone: string; password: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
+  const [resetTarget, setResetTarget] = useState<Profile | null>(null);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [resetCreds, setResetCreds] = useState<{ nome: string; password: string; telefone: string } | null>(null);
+  const [resetCopied, setResetCopied] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
