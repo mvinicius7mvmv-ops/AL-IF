@@ -174,6 +174,50 @@ export function AdminPlayers() {
     }
   }
 
+  async function handleResetPassword() {
+  if (!resetTarget) return;
+
+  setResettingPassword(true);
+
+  try {
+    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-player`;
+    const sessionRes = await supabase.auth.getSession();
+
+    const resp = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${sessionRes.data.session?.access_token}`,
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({
+        action: 'reset_password',
+        user_id: resetTarget.user_id,
+      }),
+    });
+
+    const result = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(result.error || 'Erro ao redefinir senha');
+    }
+
+    setResetTarget(null);
+
+    setResetCreds({
+      nome: result.player?.nome || resetTarget.nome,
+      password: result.credentials.password,
+      telefone: resetTarget.telefone || resetTarget.telefone_normalizado || '',
+    });
+
+    showToast('Senha redefinida com sucesso!', 'success');
+  } catch (e: any) {
+    showToast(e.message || 'Erro ao redefinir senha', 'error');
+  } finally {
+    setResettingPassword(false);
+  }
+}
+  
   async function handleToggleStatus(p: Profile) {
     const newStatus = p.status === 'active' ? 'inactive' : 'active';
     const { error } = await supabase.from('profiles').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', p.id);
