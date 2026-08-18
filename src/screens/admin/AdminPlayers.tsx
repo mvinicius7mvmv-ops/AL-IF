@@ -504,7 +504,7 @@ Link: ${window.location.origin}/entrar`;
   onClose={() => {
     if (!resettingPassword) setResetTarget(null);
   }}
-        />
+/>
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir jogador"
