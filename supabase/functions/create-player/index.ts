@@ -8,7 +8,9 @@ const corsHeaders = {
 };
 
 interface CreatePlayerBody {
-  nome: string;
+  action?: "reset_password";
+  user_id?: string;
+  nome?: string;
   apelido?: string | null;
   numero?: number | null;
   posicao?: string | null;
@@ -64,7 +66,105 @@ Deno.serve(async (req: Request) => {
     }
 
     const body: CreatePlayerBody = await req.json();
+// ============================================
+// REDEFINIR SENHA DE JOGADOR
+// ============================================
+if (body.action === "reset_password") {
+  const userId = body.user_id;
 
+  if (!userId) {
+    return new Response(JSON.stringify({
+      error: "user_id é obrigatório"
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Buscar jogador
+  const { data: player, error: playerErr } = await adminClient
+    .from("profiles")
+    .select("id, user_id, nome, telefone_normalizado, status")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (playerErr || !player) {
+    return new Response(JSON.stringify({
+      error: "Jogador não encontrado"
+    }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  if (player.status !== "active") {
+    return new Response(JSON.stringify({
+      error: "O jogador não está ativo"
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Gerar senha temporária aleatória de 6 dígitos
+  const tempPassword = Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
+
+  // Alterar senha diretamente no Supabase Auth
+  const { error: authErr } =
+    await adminClient.auth.admin.updateUserById(
+      userId,
+      { password: tempPassword }
+    );
+
+  if (authErr) {
+    console.error("Erro ao redefinir senha no Auth:", authErr);
+
+    return new Response(JSON.stringify({
+      error: authErr.message
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Atualizar profile
+  const { error: profileErr } = await adminClient
+    .from("profiles")
+    .update({
+      must_change_password: true,
+      temp_password: tempPassword,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+
+  if (profileErr) {
+    console.error("Erro ao atualizar profile:", profileErr);
+
+    return new Response(JSON.stringify({
+      error: "A senha foi alterada no Auth, mas não foi possível atualizar o perfil. Não tente redefinir novamente sem verificar o usuário."
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  return new Response(JSON.stringify({
+    success: true,
+    player: {
+      id: player.id,
+      user_id: player.user_id,
+      nome: player.nome,
+    },
+    credentials: {
+      password: tempPassword,
+    },
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
     if (!body.nome || !body.nome.trim()) {
       return new Response(JSON.stringify({ error: "Nome é obrigatório" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
