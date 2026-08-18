@@ -175,6 +175,23 @@ export function AdminPlayers() {
   }
 
   async function handleResetPassword() {
+    function copyResetCreds() {
+  if (!resetCreds) return;
+
+  const text = `AL-IF FC - Acesso ao sistema
+Jogador: ${resetCreds.nome}
+Telefone: ${resetCreds.telefone}
+Nova senha temporária: ${resetCreds.password}
+Link: ${window.location.origin}/entrar`;
+
+  navigator.clipboard.writeText(text);
+
+  setResetCopied(true);
+
+  setTimeout(() => {
+    setResetCopied(false);
+  }, 2000);
+}
   if (!resetTarget) return;
 
   setResettingPassword(true);
