@@ -174,73 +174,72 @@ export function AdminPlayers() {
     }
   }
 
-  async function handleResetPassword() {
-    function copyResetCreds() {
-  if (!resetCreds) return;
+    async function handleResetPassword() {
+    if (!resetTarget) return;
 
-  const text = `AL-IF FC - Acesso ao sistema
-Jogador: ${resetCreds.nome}
-Telefone: ${resetCreds.telefone}
-Nova senha temporária: ${resetCreds.password}
-Link: ${window.location.origin}/entrar`;
+    setResettingPassword(true);
 
-  navigator.clipboard.writeText(text);
+    try {
+      const apiUrl =
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-player`;
 
-  setResetCopied(true);
+      const sessionRes =
+        await supabase.auth.getSession();
 
-  setTimeout(() => {
-    setResetCopied(false);
-  }, 2000);
-}
-  if (!resetTarget) return;
+      const resp = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization':
+            `Bearer ${sessionRes.data.session?.access_token}`,
+          'apikey':
+            import.meta.env.VITE_SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({
+          action: 'reset_password',
+          user_id: resetTarget.user_id,
+        }),
+      });
 
-  setResettingPassword(true);
+      const result = await resp.json();
 
-  try {
-    const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-player`;
-    const sessionRes = await supabase.auth.getSession();
+      if (!resp.ok) {
+        throw new Error(
+          result.error ||
+          'Erro ao redefinir senha'
+        );
+      }
 
-    const resp = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${sessionRes.data.session?.access_token}`,
-        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({
-        action: 'reset_password',
-        user_id: resetTarget.user_id,
-      }),
-    });
+      setResetTarget(null);
 
-    const result = await resp.json();
+      setResetCreds({
+        nome:
+          result.player?.nome ||
+          resetTarget.nome,
 
-    if (!resp.ok) {
-      throw new Error(result.error || 'Erro ao redefinir senha');
+        password:
+          result.credentials.password,
+
+        telefone:
+          resetTarget.telefone ||
+          resetTarget.telefone_normalizado ||
+          '',
+      });
+
+      showToast(
+        'Senha redefinida com sucesso!',
+        'success'
+      );
+
+    } catch (e: any) {
+      showToast(
+        e.message ||
+        'Erro ao redefinir senha',
+        'error'
+      );
+    } finally {
+      setResettingPassword(false);
     }
-
-    setResetTarget(null);
-
-    setResetCreds({
-      nome: result.player?.nome || resetTarget.nome,
-      password: result.credentials.password,
-      telefone: resetTarget.telefone || resetTarget.telefone_normalizado || '',
-    });
-
-    showToast('Senha redefinida com sucesso!', 'success');
-  } catch (e: any) {
-    showToast(e.message || 'Erro ao redefinir senha', 'error');
-  } finally {
-    setResettingPassword(false);
-  }
-}
-  
-  async function handleToggleStatus(p: Profile) {
-    const newStatus = p.status === 'active' ? 'inactive' : 'active';
-    const { error } = await supabase.from('profiles').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', p.id);
-    if (error) { showToast('Erro ao alterar status', 'error'); return; }
-    showToast(newStatus === 'active' ? 'Jogador ativado' : 'Jogador desativado', 'success');
-    load();
   }
 
   async function handleDelete() {
@@ -331,9 +330,13 @@ Link: ${window.location.origin}/entrar`;
                   </div>
                 </div>
               </div>
-              <<div className="flex gap-1.5 mt-3 pt-3 border-t border-neutral-800">
-  <button onClick={() => openEdit(p)} className="btn-ghost flex-1 text-xs">
-    <Edit2 size={14} /> Editar
+              <div className="flex gap-1.5 mt-3 pt-3 border-t border-neutral-800">
+  <button
+    onClick={() => openEdit(p)}
+    className="btn-ghost flex-1 text-xs"
+  >
+    <Edit2 size={14} />
+    Editar
   </button>
 
   <button
@@ -355,21 +358,12 @@ Link: ${window.location.origin}/entrar`;
   <button
     onClick={() => setDeleteTarget(p)}
     className="btn-ghost text-xs text-red-400 hover:bg-red-900/20"
+    title="Excluir jogador"
   >
     <Trash2 size={14} />
   </button>
 </div>
-                <button onClick={() => handleToggleStatus(p)} className="btn-ghost text-xs" title={p.status === 'active' ? 'Desativar' : 'Ativar'}>
-                  <Power size={14} />
-                </button>
-                <button onClick={() => setDeleteTarget(p)} className="btn-ghost text-xs text-red-400 hover:bg-red-900/20">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                
 
       {/* Create/Edit Modal */}
       <Modal
