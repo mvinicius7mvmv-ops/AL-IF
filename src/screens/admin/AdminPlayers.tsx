@@ -331,10 +331,34 @@ Link: ${window.location.origin}/entrar`;
                   </div>
                 </div>
               </div>
-              <div className="flex gap-1.5 mt-3 pt-3 border-t border-neutral-800">
-                <button onClick={() => openEdit(p)} className="btn-ghost flex-1 text-xs">
-                  <Edit2 size={14} /> Editar
-                </button>
+              <<div className="flex gap-1.5 mt-3 pt-3 border-t border-neutral-800">
+  <button onClick={() => openEdit(p)} className="btn-ghost flex-1 text-xs">
+    <Edit2 size={14} /> Editar
+  </button>
+
+  <button
+    onClick={() => setResetTarget(p)}
+    className="btn-ghost text-xs"
+    title="Redefinir senha"
+  >
+    <KeyRound size={14} />
+  </button>
+
+  <button
+    onClick={() => handleToggleStatus(p)}
+    className="btn-ghost text-xs"
+    title={p.status === 'active' ? 'Desativar' : 'Ativar'}
+  >
+    <Power size={14} />
+  </button>
+
+  <button
+    onClick={() => setDeleteTarget(p)}
+    className="btn-ghost text-xs text-red-400 hover:bg-red-900/20"
+  >
+    <Trash2 size={14} />
+  </button>
+</div>
                 <button onClick={() => handleToggleStatus(p)} className="btn-ghost text-xs" title={p.status === 'active' ? 'Desativar' : 'Ativar'}>
                   <Power size={14} />
                 </button>
@@ -472,6 +496,15 @@ Link: ${window.location.origin}/entrar`;
         )}
       </Modal>
 
+      <ConfirmModal
+  open={!!resetTarget}
+  title="Redefinir senha"
+  message={`Tem certeza que deseja redefinir a senha de ${resetTarget?.nome}? Uma nova senha temporária será criada e o jogador deverá definir uma nova senha no próximo acesso.`}
+  confirmLabel={resettingPassword ? 'Redefinindo...' : 'Redefinir senha'}
+  onConfirm={handleResetPassword}
+  onClose={() => {
+    if (!resettingPassword) setResetTarget(null);
+  }}
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir jogador"
