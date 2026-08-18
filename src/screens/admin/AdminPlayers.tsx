@@ -495,7 +495,6 @@ Link: ${window.location.origin}/entrar`;
           </div>
         )}
       </Modal>
-
       <ConfirmModal
   open={!!resetTarget}
   title="Redefinir senha"
