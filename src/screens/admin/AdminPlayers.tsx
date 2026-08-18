@@ -260,6 +260,33 @@ Link: ${window.location.origin}/entrar`;
     }
   }
 
+  async function handleToggleStatus(p: Profile) {
+    const newStatus =
+      p.status === 'active' ? 'inactive' : 'active';
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', p.id);
+
+    if (error) {
+      showToast('Erro ao alterar status', 'error');
+      return;
+    }
+
+    showToast(
+      newStatus === 'active'
+        ? 'Jogador ativado'
+        : 'Jogador desativado',
+      'success'
+    );
+
+    load();
+  }
+  
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
