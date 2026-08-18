@@ -174,6 +174,24 @@ export function AdminPlayers() {
     }
   }
 
+    function copyResetCreds() {
+    if (!resetCreds) return;
+
+    const text = `AL-IF FC - Acesso ao sistema
+Jogador: ${resetCreds.nome}
+Telefone: ${resetCreds.telefone}
+Nova senha temporária: ${resetCreds.password}
+Link: ${window.location.origin}/entrar`;
+
+    navigator.clipboard.writeText(text);
+
+    setResetCopied(true);
+
+    setTimeout(() => {
+      setResetCopied(false);
+    }, 2000);
+  }
+  
     async function handleResetPassword() {
     if (!resetTarget) return;
 
@@ -307,62 +325,98 @@ export function AdminPlayers() {
       ) : filtered.length === 0 ? (
         <EmptyState icon={<Users size={48} />} title="Nenhum jogador" description="Clique em 'Novo Jogador' para começar." />
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map(p => (
-            <div key={p.id} className={cn('card p-4', p.status === 'inactive' && 'opacity-60')}>
+            <div
+              key={p.id}
+              className={cn(
+                'card p-4',
+                p.status === 'inactive' && 'opacity-60'
+              )}
+            >
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 rounded-full bg-neutral-800 overflow-hidden shrink-0">
                   {p.foto_url ? (
-                    <img src={p.foto_url} alt={p.nome} className="w-full h-full object-cover" />
+                    <img
+                      src={p.foto_url}
+                      alt={p.nome}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-neutral-600 font-bold">
                       {(p.apelido || p.nome).charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
+
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">{p.apelido || p.nome}</p>
-                  <p className="text-neutral-500 text-xs truncate">{p.nome}</p>
+                  <p className="text-white font-semibold text-sm truncate">
+                    {p.apelido || p.nome}
+                  </p>
+
+                  <p className="text-neutral-500 text-xs truncate">
+                    {p.nome}
+                  </p>
+
                   <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                    {p.numero != null && <span className="badge bg-red-600/15 text-red-400 border border-red-800/40">#{p.numero}</span>}
-                    {p.posicao && <span className="text-neutral-500 text-xs">{p.posicao}</span>}
-                    {p.status === 'inactive' && <span className="badge bg-neutral-800 text-neutral-400">Inativo</span>}
+                    {p.numero != null && (
+                      <span className="badge bg-red-600/15 text-red-400 border border-red-800/40">
+                        #{p.numero}
+                      </span>
+                    )}
+
+                    {p.posicao && (
+                      <span className="text-neutral-500 text-xs">
+                        {p.posicao}
+                      </span>
+                    )}
+
+                    {p.status === 'inactive' && (
+                      <span className="badge bg-neutral-800 text-neutral-400">
+                        Inativo
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
+
               <div className="flex gap-1.5 mt-3 pt-3 border-t border-neutral-800">
-  <button
-    onClick={() => openEdit(p)}
-    className="btn-ghost flex-1 text-xs"
-  >
-    <Edit2 size={14} />
-    Editar
-  </button>
+                <button
+                  onClick={() => openEdit(p)}
+                  className="btn-ghost flex-1 text-xs"
+                >
+                  <Edit2 size={14} />
+                  Editar
+                </button>
 
-  <button
-    onClick={() => setResetTarget(p)}
-    className="btn-ghost text-xs"
-    title="Redefinir senha"
-  >
-    <KeyRound size={14} />
-  </button>
+                <button
+                  onClick={() => setResetTarget(p)}
+                  className="btn-ghost text-xs"
+                  title="Redefinir senha"
+                >
+                  <KeyRound size={14} />
+                </button>
 
-  <button
-    onClick={() => handleToggleStatus(p)}
-    className="btn-ghost text-xs"
-    title={p.status === 'active' ? 'Desativar' : 'Ativar'}
-  >
-    <Power size={14} />
-  </button>
+                <button
+                  onClick={() => handleToggleStatus(p)}
+                  className="btn-ghost text-xs"
+                  title={p.status === 'active' ? 'Desativar' : 'Ativar'}
+                >
+                  <Power size={14} />
+                </button>
 
-  <button
-    onClick={() => setDeleteTarget(p)}
-    className="btn-ghost text-xs text-red-400 hover:bg-red-900/20"
-    title="Excluir jogador"
-  >
-    <Trash2 size={14} />
-  </button>
-</div>
+                <button
+                  onClick={() => setDeleteTarget(p)}
+                  className="btn-ghost text-xs text-red-400 hover:bg-red-900/20"
+                  title="Excluir jogador"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
                 
 
       {/* Create/Edit Modal */}
