@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { RouterProvider, useRouter, matchRoute } from '@/contexts/RouterContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { FullPageLoading } from '@/components/States';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LoginScreen } from '@/screens/auth/LoginScreen';
 import { ChangePasswordScreen } from '@/screens/auth/ChangePasswordScreen';
 import { PublicLayout } from '@/components/PublicLayout';
@@ -43,28 +44,28 @@ function Routes() {
   const { path, navigate } = useRouter();
   const { user, profile, role, loading } = useAuth();
 
-  if (loading) return <FullPageLoading />;
-
-  // Auth routes
-  if (path === '/entrar') {
-    if (user && profile) {
-      navigate(role === 'admin' ? '/admin' : '/jogador');
-      return <FullPageLoading />;
+  let redirectTo: string | null = null;
+  if (!loading) {
+    if (path === '/entrar' && user && profile) {
+      redirectTo = role === 'admin' ? '/admin' : '/jogador';
+    } else if (path.startsWith('/admin') && (!user || role !== 'admin')) {
+      redirectTo = '/entrar';
+    } else if ((path.startsWith('/jogador/') || path === '/jogador') && (!user || !profile)) {
+      redirectTo = '/entrar';
     }
-    return <LoginScreen />;
   }
 
-  // Force password change
-  if (user && profile?.must_change_password) {
-    return <ChangePasswordScreen />;
-  }
+  useEffect(() => {
+    if (redirectTo) navigate(redirectTo);
+  }, [redirectTo, navigate]);
 
-  // Admin routes (protected)
+  if (loading || redirectTo) return <FullPageLoading />;
+
+  if (path === '/entrar') return <LoginScreen />;
+
+  if (user && profile?.must_change_password) return <ChangePasswordScreen />;
+
   if (path.startsWith('/admin')) {
-    if (!user || role !== 'admin') {
-      navigate('/entrar');
-      return <FullPageLoading />;
-    }
     return (
       <AdminLayout>
         <AdminRoutes path={path} />
@@ -72,12 +73,7 @@ function Routes() {
     );
   }
 
-  // Player routes (protected)
   if (path.startsWith('/jogador/') || path === '/jogador') {
-    if (!user || !profile) {
-      navigate('/entrar');
-      return <FullPageLoading />;
-    }
     return (
       <PlayerLayout>
         <PlayerRoutes path={path} />
@@ -85,7 +81,6 @@ function Routes() {
     );
   }
 
-  // Public routes
   return (
     <PublicLayout>
       <PublicRoutes path={path} />
@@ -151,7 +146,9 @@ export default function App() {
       <RouterProvider>
         <AuthProvider>
           <ToastProvider>
-            <Routes />
+            <ErrorBoundary>
+              <Routes />
+            </ErrorBoundary>
           </ToastProvider>
         </AuthProvider>
       </RouterProvider>
