@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, Profile } from '@/lib/supabase';
 import { Loading } from '@/components/States';
-import { Star, Goal, TrendingUp, Shirt, Calendar } from 'lucide-react';
+import { Star, Goal, TrendingUp, Calendar } from 'lucide-react';
 
 interface HallOfFameEntry {
   player: Profile;
@@ -13,7 +13,6 @@ export function HallOfFame() {
   const [craqueTemp, setCraqueTemp] = useState<HallOfFameEntry | null>(null);
   const [artilheiro, setArtilheiro] = useState<HallOfFameEntry | null>(null);
   const [assistente, setAssistente] = useState<HallOfFameEntry | null>(null);
-  const [maisJogos, setMaisJogos] = useState<HallOfFameEntry | null>(null);
   const [melhorPresenca, setMelhorPresenca] = useState<HallOfFameEntry | null>(null);
 
   useEffect(() => { load(); }, []);
@@ -48,34 +47,24 @@ export function HallOfFame() {
 
       const goals = new Map<string, number>();
       const assists = new Map<string, number>();
-      const matchSet = new Map<string, Set<string>>();
       const presence = new Map<string, number>();
 
       events.forEach((e: any) => {
         const id = e.player_id;
         if (e.tipo === 'gol') goals.set(id, (goals.get(id) || 0) + 1);
         else if (e.tipo === 'assistencia') assists.set(id, (assists.get(id) || 0) + 1);
-        if (!matchSet.has(id)) matchSet.set(id, new Set());
-        matchSet.get(id)!.add(e.match_id);
       });
 
       adjs.forEach((a: any) => {
         const id = a.player_id;
         if (a.tipo === 'gols') goals.set(id, (goals.get(id) || 0) + a.valor);
         else if (a.tipo === 'assistencias') assists.set(id, (assists.get(id) || 0) + a.valor);
-        else if (a.tipo === 'jogos') {
-          if (!matchSet.has(id)) matchSet.set(id, new Set());
-          for (let i = 0; i < a.valor; i++) matchSet.get(id)!.add(`adj-${id}-${i}`);
-        }
         else if (a.tipo === 'presenca') presence.set(id, (presence.get(id) || 0) + a.valor);
       });
 
       attendance.forEach((a: any) => {
         presence.set(a.player_id, (presence.get(a.player_id) || 0) + 1);
       });
-
-      const jogosCount = new Map<string, number>();
-      matchSet.forEach((set, id) => jogosCount.set(id, set.size));
 
       function top(entries: Map<string, number>): HallOfFameEntry | null {
         let best: HallOfFameEntry | null = null;
@@ -89,10 +78,6 @@ export function HallOfFame() {
       setCraqueTemp(top(momCount));
       setArtilheiro(top(goals));
       setAssistente(top(assists));
-
-      const jogosEntries = new Map<string, number>();
-      jogosCount.forEach((v, id) => jogosEntries.set(id, v));
-      setMaisJogos(top(jogosEntries));
       setMelhorPresenca(top(presence));
     } catch {
       // silently fail — Hall of Fame is non-critical
@@ -107,7 +92,6 @@ export function HallOfFame() {
     { icon: <Star size={16} className="text-yellow-400" />, title: 'Craque da Temporada', entry: craqueTemp, unit: 'prêmios' },
     { icon: <Goal size={16} className="text-green-400" />, title: 'Artilheiro', entry: artilheiro, unit: 'gols' },
     { icon: <TrendingUp size={16} className="text-blue-400" />, title: 'Líder de Assistências', entry: assistente, unit: 'assistências' },
-    { icon: <Shirt size={16} className="text-red-400" />, title: 'Mais Partidas', entry: maisJogos, unit: 'jogos' },
     { icon: <Calendar size={16} className="text-purple-400" />, title: 'Melhor Presença', entry: melhorPresenca, unit: 'presenças' },
   ];
 
@@ -116,7 +100,7 @@ export function HallOfFame() {
       <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wide mb-4 flex items-center gap-2">
         <Star size={16} className="text-yellow-400" /> Hall da Fama
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {cards.map((c, i) => (
           <HallCard key={i} icon={c.icon} title={c.title} entry={c.entry} unit={c.unit} />
         ))}
