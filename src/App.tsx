@@ -44,13 +44,21 @@ function Routes() {
   const { path, navigate } = useRouter();
   const { user, profile, role, loading } = useAuth();
 
+  const basePath = path.split('?')[0];
+  const searchParams = new URLSearchParams(path.split('?')[1] || '');
+  const matchParam = searchParams.get('match');
+
   let redirectTo: string | null = null;
   if (!loading) {
-    if (path === '/entrar' && user && profile) {
-      redirectTo = role === 'admin' ? '/admin' : '/jogador';
-    } else if (path.startsWith('/admin') && (!user || role !== 'admin')) {
+    if (basePath === '/entrar' && user && profile) {
+      if (matchParam && role !== 'admin') {
+        redirectTo = `/jogador/jogos/${matchParam}`;
+      } else {
+        redirectTo = role === 'admin' ? '/admin' : '/jogador';
+      }
+    } else if (basePath.startsWith('/admin') && (!user || role !== 'admin')) {
       redirectTo = '/entrar';
-    } else if ((path.startsWith('/jogador/') || path === '/jogador') && (!user || !profile)) {
+    } else if ((basePath.startsWith('/jogador/') || basePath === '/jogador') && (!user || !profile)) {
       redirectTo = '/entrar';
     }
   }
@@ -61,29 +69,29 @@ function Routes() {
 
   if (loading || redirectTo) return <FullPageLoading />;
 
-  if (path === '/entrar') return <LoginScreen />;
+  if (basePath === '/entrar') return <LoginScreen />;
 
   if (user && profile?.must_change_password) return <ChangePasswordScreen />;
 
-  if (path.startsWith('/admin')) {
+  if (basePath.startsWith('/admin')) {
     return (
       <AdminLayout>
-        <AdminRoutes path={path} />
+        <AdminRoutes path={basePath} />
       </AdminLayout>
     );
   }
 
-  if (path.startsWith('/jogador/') || path === '/jogador') {
+  if (basePath.startsWith('/jogador/') || basePath === '/jogador') {
     return (
       <PlayerLayout>
-        <PlayerRoutes path={path} />
+        <PlayerRoutes path={basePath} />
       </PlayerLayout>
     );
   }
 
   return (
     <PublicLayout>
-      <PublicRoutes path={path} />
+      <PublicRoutes path={basePath} />
     </PublicLayout>
   );
 }
