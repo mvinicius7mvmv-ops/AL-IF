@@ -218,7 +218,7 @@ export function PublicStats() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">{s.player.apelido || s.player.nome}</p>
+                  <p className="text-white font-semibold text-sm line-clamp-1">{s.player.apelido || s.player.nome}</p>
                   {s.player.posicao && <p className="text-neutral-500 text-xs">{s.player.posicao}</p>}
                 </div>
                 <p className="text-xl font-bold text-red-500 tabular-nums">{currentTab.getValue(s)}</p>

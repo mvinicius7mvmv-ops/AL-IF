@@ -308,74 +308,271 @@ export function AdminFees() {
             <div>Status</div>
             <div className="text-right">Ações</div>
           </div>
-          <div className="divide-y divide-neutral-800/50">
+                    <div className="divide-y divide-neutral-800/50">
             {gridRows.map(({ player, fee }) => {
               const overdue = isOverdue(fee);
+
               return (
-                <div key={player.id} className="grid sm:grid-cols-[40px_1fr_100px_100px_1fr_100px] gap-3 px-4 py-3 items-center hover:bg-neutral-900/50 transition-colors">
-                  {/* Checkbox */}
-                  <button
-                    onClick={() => fee && togglePaid(fee)}
-                    disabled={!fee || fee.isento}
-                    className={cn(
-                      'w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0',
-                      !fee ? 'bg-neutral-800/50 cursor-not-allowed opacity-30' :
-                      fee.isento ? 'bg-neutral-800/50 cursor-not-allowed' :
-                      fee.status === 'pago' ? 'bg-green-600 hover:bg-green-700' :
-                      'bg-neutral-800 hover:bg-neutral-700 border border-neutral-700',
-                    )}
-                  >
-                    {fee && fee.status === 'pago' && <CheckCircle size={16} className="text-white" />}
-                  </button>
+                <div
+                  key={player.id}
+                  className="px-4 py-3 hover:bg-neutral-900/50 transition-colors"
+                >
+                  {/* Mobile layout */}
+                  <div className="flex items-center gap-3 sm:hidden">
+                    <button
+                      onClick={() => fee && togglePaid(fee)}
+                      disabled={!fee || fee.isento}
+                      className={cn(
+                        'w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0',
+                        !fee
+                          ? 'bg-neutral-800/50 cursor-not-allowed opacity-30'
+                          : fee.isento
+                            ? 'bg-neutral-800/50 cursor-not-allowed'
+                            : fee.status === 'pago'
+                              ? 'bg-green-600'
+                              : 'bg-neutral-800 border border-neutral-700',
+                      )}
+                    >
+                      {fee && fee.status === 'pago' && (
+                        <CheckCircle size={16} className="text-white" />
+                      )}
+                    </button>
 
-                  {/* Player name */}
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{player.apelido || player.nome}</p>
-                    {fee?.pago_em && <p className="text-green-400 text-xs">Pago em {formatDate(fee.pago_em)}</p>}
-                    {fee?.observacao && <p className="text-neutral-500 text-xs truncate italic">"{fee.observacao}"</p>}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-medium line-clamp-1">
+                        {player.apelido || player.nome}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {fee ? (
+                          <span
+                            className={cn(
+                              'text-xs font-bold tabular-nums',
+                              fee.isento ? 'text-neutral-600' : 'text-white',
+                            )}
+                          >
+                            {fee.isento
+                              ? 'Isento'
+                              : `R$ ${Number(fee.valor).toFixed(2)}`}
+                          </span>
+                        ) : (
+                          <span className="text-neutral-600 text-xs">—</span>
+                        )}
+
+                        {fee?.vencimento && (
+                          <span className="text-neutral-500 text-xs">
+                            · {formatDate(fee.vencimento)}
+                          </span>
+                        )}
+                      </div>
+
+                      {fee?.observacao && (
+                        <p className="text-neutral-500 text-xs line-clamp-2 italic mt-0.5">
+                          "{fee.observacao}"
+                        </p>
+                      )}
+
+                      {fee?.pago_em && (
+                        <p className="text-green-400 text-xs">
+                          Pago em {formatDate(fee.pago_em)}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      {!fee ? (
+                        <span className="badge border-neutral-700 text-neutral-600">
+                          Não gerada
+                        </span>
+                      ) : fee.isento ? (
+                        <span className="badge border-neutral-700 text-neutral-500">
+                          Isento
+                        </span>
+                      ) : fee.status === 'pago' ? (
+                        <span className="badge border-green-800/40 text-green-400">
+                          Pago
+                        </span>
+                      ) : overdue ? (
+                        <span className="badge border-red-800/40 text-red-400">
+                          Atrasado
+                        </span>
+                      ) : (
+                        <span className="badge border-yellow-800/40 text-yellow-400">
+                          Pendente
+                        </span>
+                      )}
+
+                      {fee && (
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => {
+                              setNoteTarget(fee);
+                              setNoteText(fee.observacao || '');
+                            }}
+                            className="btn-ghost p-1 text-neutral-500"
+                            title="Observação"
+                          >
+                            <StickyNote size={12} />
+                          </button>
+
+                          <button
+                            onClick={() => toggleExempt(fee)}
+                            className="btn-ghost p-1 text-neutral-500"
+                            title="Isentar"
+                          >
+                            <Ban size={12} />
+                          </button>
+
+                          <button
+                            onClick={() => openEdit(fee)}
+                            className="btn-ghost p-1 text-neutral-500"
+                            title="Editar"
+                          >
+                            <Edit2 size={12} />
+                          </button>
+
+                          <button
+                            onClick={() => deleteFee(fee)}
+                            className="btn-ghost p-1 text-neutral-500 hover:text-red-400"
+                            title="Excluir"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Value */}
-                  <div className="text-right">
-                    {fee ? (
-                      <span className={cn('text-sm font-bold tabular-nums', fee.isento ? 'text-neutral-600' : 'text-white')}>
-                        {fee.isento ? 'Isento' : `R$ ${Number(fee.valor).toFixed(2)}`}
-                      </span>
-                    ) : (
-                      <span className="text-neutral-600 text-xs">—</span>
-                    )}
-                  </div>
+                  {/* Desktop layout */}
+                  <div className="hidden sm:grid grid-cols-[40px_1fr_100px_100px_1fr_100px] gap-3 items-center">
+                    {/* Checkbox */}
+                    <button
+                      onClick={() => fee && togglePaid(fee)}
+                      disabled={!fee || fee.isento}
+                      className={cn(
+                        'w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0',
+                        !fee
+                          ? 'bg-neutral-800/50 cursor-not-allowed opacity-30'
+                          : fee.isento
+                            ? 'bg-neutral-800/50 cursor-not-allowed'
+                            : fee.status === 'pago'
+                              ? 'bg-green-600 hover:bg-green-700'
+                              : 'bg-neutral-800 hover:bg-neutral-700 border border-neutral-700',
+                      )}
+                    >
+                      {fee && fee.status === 'pago' && (
+                        <CheckCircle size={16} className="text-white" />
+                      )}
+                    </button>
 
-                  {/* Due date */}
-                  <div className="text-neutral-500 text-xs">
-                    {fee?.vencimento ? formatDate(fee.vencimento) : '—'}
-                  </div>
+                    {/* Player name */}
+                    <div className="min-w-0">
+                      <p className="text-white text-sm font-medium line-clamp-1">
+                        {player.apelido || player.nome}
+                      </p>
 
-                  {/* Status badge */}
-                  <div>
-                    {!fee ? (
-                      <span className="badge border-neutral-700 text-neutral-600">Não gerada</span>
-                    ) : fee.isento ? (
-                      <span className="badge border-neutral-700 text-neutral-500">Isento</span>
-                    ) : fee.status === 'pago' ? (
-                      <span className="badge border-green-800/40 text-green-400">Pago</span>
-                    ) : overdue ? (
-                      <span className="badge border-red-800/40 text-red-400">Atrasado</span>
-                    ) : (
-                      <span className="badge border-yellow-800/40 text-yellow-400">Pendente</span>
-                    )}
-                  </div>
+                      {fee?.pago_em && (
+                        <p className="text-green-400 text-xs">
+                          Pago em {formatDate(fee.pago_em)}
+                        </p>
+                      )}
 
-                  {/* Actions */}
-                  <div className="flex items-center justify-end gap-1">
-                    {fee && (
-                      <>
-                        <button onClick={() => { setNoteTarget(fee); setNoteText(fee.observacao || ''); }} className="btn-ghost p-1.5 text-neutral-500" title="Observação"><StickyNote size={14} /></button>
-                        <button onClick={() => toggleExempt(fee)} className="btn-ghost p-1.5 text-neutral-500" title="Isentar"><Ban size={14} /></button>
-                        <button onClick={() => openEdit(fee)} className="btn-ghost p-1.5 text-neutral-500" title="Editar"><Edit2 size={14} /></button>
-                        <button onClick={() => deleteFee(fee)} className="btn-ghost p-1.5 text-neutral-500 hover:text-red-400" title="Excluir"><Trash2 size={14} /></button>
-                      </>
-                    )}
+                      {fee?.observacao && (
+                        <p className="text-neutral-500 text-xs line-clamp-2 italic">
+                          "{fee.observacao}"
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Value */}
+                    <div className="text-right">
+                      {fee ? (
+                        <span
+                          className={cn(
+                            'text-sm font-bold tabular-nums',
+                            fee.isento ? 'text-neutral-600' : 'text-white',
+                          )}
+                        >
+                          {fee.isento
+                            ? 'Isento'
+                            : `R$ ${Number(fee.valor).toFixed(2)}`}
+                        </span>
+                      ) : (
+                        <span className="text-neutral-600 text-xs">—</span>
+                      )}
+                    </div>
+
+                    {/* Due date */}
+                    <div className="text-neutral-500 text-xs">
+                      {fee?.vencimento ? formatDate(fee.vencimento) : '—'}
+                    </div>
+
+                    {/* Status badge */}
+                    <div>
+                      {!fee ? (
+                        <span className="badge border-neutral-700 text-neutral-600">
+                          Não gerada
+                        </span>
+                      ) : fee.isento ? (
+                        <span className="badge border-neutral-700 text-neutral-500">
+                          Isento
+                        </span>
+                      ) : fee.status === 'pago' ? (
+                        <span className="badge border-green-800/40 text-green-400">
+                          Pago
+                        </span>
+                      ) : overdue ? (
+                        <span className="badge border-red-800/40 text-red-400">
+                          Atrasado
+                        </span>
+                      ) : (
+                        <span className="badge border-yellow-800/40 text-yellow-400">
+                          Pendente
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-end gap-1">
+                      {fee && (
+                        <>
+                          <button
+                            onClick={() => {
+                              setNoteTarget(fee);
+                              setNoteText(fee.observacao || '');
+                            }}
+                            className="btn-ghost p-1.5 text-neutral-500"
+                            title="Observação"
+                          >
+                            <StickyNote size={14} />
+                          </button>
+
+                          <button
+                            onClick={() => toggleExempt(fee)}
+                            className="btn-ghost p-1.5 text-neutral-500"
+                            title="Isentar"
+                          >
+                            <Ban size={14} />
+                          </button>
+
+                          <button
+                            onClick={() => openEdit(fee)}
+                            className="btn-ghost p-1.5 text-neutral-500"
+                            title="Editar"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+
+                          <button
+                            onClick={() => deleteFee(fee)}
+                            className="btn-ghost p-1.5 text-neutral-500 hover:text-red-400"
+                            title="Excluir"
+                          >
+                            <Trash2 size={14} />
+                         </button>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

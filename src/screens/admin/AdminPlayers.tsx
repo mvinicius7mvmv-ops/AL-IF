@@ -580,11 +580,11 @@ export function AdminPlayers() {
 
                 <div className="flex-1 min-w-0">
 
-                  <p className="text-white font-semibold text-sm truncate">
+                  <p className="text-white font-semibold text-sm line-clamp-1">
                     {p.apelido || p.nome}
                   </p>
 
-                  <p className="text-neutral-500 text-xs truncate">
+                  <p className="text-neutral-500 text-xs line-clamp-1">
                     {p.nome}
                   </p>
 

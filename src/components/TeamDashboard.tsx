@@ -220,7 +220,7 @@ export function TeamDashboard({ data, loading, error, reload, linkPrefix }: {
                       <span className="text-2xl font-bold text-white tabular-nums">{m.gols_adversario ?? 0}</span>
                     </div>
                     <div className="flex items-center gap-2 justify-end min-w-0">
-                      <span className="text-neutral-300 text-xs font-medium truncate max-w-[80px] text-right">{m.adversario}</span>
+                      <span className="text-neutral-300 text-xs font-medium text-right line-clamp-2 sm:max-w-[80px]">{m.adversario}</span>
                       <OpponentLogo url={m.logo_url} name={m.adversario} size={32} rounded="rounded-lg" />
                     </div>
                   </div>
@@ -243,27 +243,28 @@ export function TeamDashboard({ data, loading, error, reload, linkPrefix }: {
               <button
                 key={m.id}
                 onClick={() => navigate(`${linkPrefix}/jogos/${m.id}`)}
-                className="card card-hover p-5 text-left"
+                className="card card-hover p-4 sm:p-5 text-left"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    <Crest size={40} />
-                    <div>
+                  <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                    <Crest size={36} className="shrink-0 sm:hidden" />
+                    <Crest size={40} className="shrink-0 hidden sm:block" />
+                    <div className="min-w-0">
                       <p className="text-xs text-neutral-500">AL-IF FC vs</p>
-                      <p className="text-white font-bold">{m.adversario}</p>
+                      <p className="text-white font-bold text-sm line-clamp-2">{m.adversario}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <OpponentLogo url={m.logo_url} name={m.adversario} size={40} rounded="rounded-lg" />
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <OpponentLogo url={m.logo_url} name={m.adversario} size={36} rounded="rounded-lg" />
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <p className="text-white font-bold text-sm">{formatDate(m.data)}</p>
                     {m.horario && <p className="text-neutral-400 text-xs">{m.horario.slice(0,5)}</p>}
                   </div>
                 </div>
                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-neutral-800/60">
-                  {m.local && <span className="text-neutral-500 text-xs flex items-center gap-1"><MapPin size={12} /> {m.local}</span>}
-                  {m.competicao && <span className="text-red-400/70 text-xs font-medium ml-auto">{m.competicao}</span>}
+                  {m.local && <span className="text-neutral-500 text-xs flex items-center gap-1 min-w-0"><MapPin size={12} className="shrink-0" /> <span className="line-clamp-1">{m.local}</span></span>}
+                  {m.competicao && <span className="text-red-400/70 text-xs font-medium ml-auto shrink-0">{m.competicao}</span>}
                 </div>
               </button>
             ))}
@@ -348,43 +349,44 @@ function NextMatchHero({ match, linkPrefix, navigate }: { match: Match | null; l
         <div className="absolute right-0 top-0 w-48 h-48 opacity-5 group-hover:opacity-[0.08] transition-opacity duration-500">
           <Crest size={192} className="absolute -right-8 -top-8" />
         </div>
-        <div className="relative flex flex-col md:flex-row items-center gap-6">
+        <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
           <div className="flex items-center gap-2 text-red-500">
             <Flame size={18} />
             <span className="text-xs font-bold uppercase tracking-wider">Próximo Jogo</span>
           </div>
-          <div className="flex items-center gap-4 md:gap-8 flex-1">
-            <div className="flex items-center gap-3">
-              <Crest size={56} className="shadow-lg" />
-              <div>
+          <div className="flex items-center gap-3 sm:gap-4 md:gap-8 flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <Crest size={48} className="shadow-lg sm:hidden" />
+              <Crest size={56} className="shadow-lg hidden sm:block" />
+              <div className="min-w-0">
                 <p className="text-neutral-500 text-xs">Time da Casa</p>
                 <p className="text-white font-bold text-sm">AL-IF FC</p>
               </div>
             </div>
-            <div className="text-neutral-700 text-2xl font-bold">VS</div>
-            <div className="flex items-center gap-3">
-              <OpponentLogo url={match.logo_url} name={match.adversario} size={56} />
-              <div>
+            <div className="text-neutral-700 text-xl sm:text-2xl font-bold shrink-0">VS</div>
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <OpponentLogo url={match.logo_url} name={match.adversario} size={48} rounded="rounded-lg" />
+              <div className="min-w-0">
                 <p className="text-neutral-500 text-xs">Visitante</p>
-                <p className="text-white font-bold text-sm truncate max-w-[120px]">{match.adversario}</p>
+                <p className="text-white font-bold text-sm line-clamp-2">{match.adversario}</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-6 md:border-l md:border-neutral-800 md:pl-8">
-            <div className="text-center">
+          <div className="flex items-center gap-4 sm:gap-6 md:border-l md:border-neutral-800 md:pl-8">
+            <div className="text-center shrink-0">
               <p className="text-neutral-500 text-[10px] uppercase tracking-wide">Data</p>
               <p className="text-white font-bold text-sm">{formatDate(match.data)}</p>
               {match.horario && <p className="text-red-400 text-sm font-medium">{match.horario.slice(0,5)}</p>}
             </div>
             {match.local && (
-              <div className="text-center hidden sm:block">
+              <div className="text-center hidden sm:block shrink-0">
                 <p className="text-neutral-500 text-[10px] uppercase tracking-wide">Local</p>
                 <p className="text-white font-medium text-xs flex items-center gap-1">
                   <MapPin size={12} /> {match.local}
                 </p>
               </div>
             )}
-            <ChevronRight size={24} className="text-neutral-600 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+            <ChevronRight size={24} className="text-neutral-600 group-hover:text-red-500 group-hover:translate-x-1 transition-all shrink-0" />
           </div>
         </div>
         {match.competicao && (
@@ -443,8 +445,8 @@ function PlayerHighlightCard({
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-white font-bold text-lg truncate">{player.apelido || player.nome}</p>
-            <p className="text-neutral-500 text-xs truncate">{player.nome}</p>
+            <p className="text-white font-bold text-base sm:text-lg line-clamp-2">{player.apelido || player.nome}</p>
+            <p className="text-neutral-500 text-xs line-clamp-1">{player.nome}</p>
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-red-500 tabular-nums">{value}</p>

@@ -192,7 +192,7 @@ export function PlayerAwards() {
               <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-neutral-800/50">
                 <Star size={20} className="text-yellow-400 shrink-0" fill="currentColor" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">AL-IF FC {a.score} {a.opponent}</p>
+                  <p className="text-white font-semibold text-sm line-clamp-2">AL-IF FC {a.score} {a.opponent}</p>
                   <p className="text-neutral-500 text-xs">{a.competition}</p>
                 </div>
                 <p className="text-neutral-500 text-xs shrink-0">{formatDate(a.date)}</p>

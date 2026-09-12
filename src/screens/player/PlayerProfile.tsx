@@ -102,7 +102,7 @@ function Field({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 p-4">
       <span className="text-neutral-500 text-sm">{label}</span>
-      <span className="text-white text-sm font-medium text-right truncate">{value}</span>
+      <span className="text-white text-sm font-medium text-right line-clamp-2">{value}</span>
     </div>
   );
 }

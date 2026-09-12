@@ -68,8 +68,8 @@ export function PublicSquad() {
                   {p.numero}
                 </div>
               )}
-              <p className="text-white font-semibold text-sm mt-2 truncate">{p.apelido || p.nome}</p>
-              {p.apelido && <p className="text-neutral-500 text-xs truncate">{p.nome}</p>}
+              <p className="text-white font-semibold text-sm mt-2 line-clamp-2">{p.apelido || p.nome}</p>
+              {p.apelido && <p className="text-neutral-500 text-xs line-clamp-1">{p.nome}</p>}
               {p.posicao && <p className="text-neutral-400 text-xs mt-1">{p.posicao}</p>}
             </div>
           ))}

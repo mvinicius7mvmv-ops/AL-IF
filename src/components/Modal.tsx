@@ -48,7 +48,7 @@ export function Modal({ open, onClose, title, children, footer, size = 'md' }: M
         )}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-800 shrink-0">
-          <h3 className="text-base font-bold text-white">{title}</h3>
+          <h3 className="text-base font-bold text-white line-clamp-2 pr-2">{title}</h3>
           <button
             onClick={onClose}
             className="text-neutral-400 hover:text-white transition-colors p-1 rounded-md hover:bg-neutral-800"

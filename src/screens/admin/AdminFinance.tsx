@@ -207,7 +207,7 @@ export function AdminFinance() {
                 {e.tipo === 'receita' ? <TrendingUp size={18} className="text-green-400" /> : <TrendingDown size={18} className="text-red-400" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">{e.descricao}</p>
+                <p className="text-white text-sm font-medium line-clamp-2">{e.descricao}</p>
                 <p className="text-neutral-500 text-xs">{e.categoria || 'Sem categoria'} · {formatDate(e.data)}</p>
               </div>
               <p className={cn('font-bold tabular-nums text-sm shrink-0', e.tipo === 'receita' ? 'text-green-400' : 'text-red-400')}>

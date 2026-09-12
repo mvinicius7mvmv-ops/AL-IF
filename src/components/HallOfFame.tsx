@@ -127,7 +127,7 @@ function HallCard({ icon, title, entry, unit }: { icon: React.ReactNode; title: 
               </div>
             )}
           </div>
-          <p className="text-white font-bold text-sm truncate">{entry.player.apelido || entry.player.nome}</p>
+          <p className="text-white font-bold text-sm line-clamp-1">{entry.player.apelido || entry.player.nome}</p>
           <p className="text-red-500 font-bold text-lg tabular-nums mt-1">{entry.value}</p>
           <p className="text-neutral-600 text-xs">{unit}</p>
         </>

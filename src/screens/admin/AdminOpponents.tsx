@@ -199,7 +199,7 @@ export function AdminOpponents() {
                 {o.logo_url ? <img src={o.logo_url} alt={o.name} className="w-full h-full object-contain p-1" /> : <Shield size={20} className="text-neutral-600" />}
               </button>
               <div className="flex-1 min-w-0">
-                <button onClick={() => navigate(`/adversario/${o.id}`)} className="text-white font-semibold text-sm truncate block hover:text-red-400 transition-colors">{o.name}</button>
+                <button onClick={() => navigate(`/adversario/${o.id}`)} className="text-white font-semibold text-sm line-clamp-2 block hover:text-red-400 transition-colors">{o.name}</button>
                 {(o.city || o.state) && <p className="text-neutral-500 text-xs flex items-center gap-1"><MapPin size={10} /> {[o.city, o.state].filter(Boolean).join(' - ')}</p>}
                 <span className={`badge mt-1 ${o.active ? 'border-green-500/30 text-green-400' : 'border-neutral-700 text-neutral-500'}`}>{o.active ? 'Ativo' : 'Inativo'}</span>
               </div>

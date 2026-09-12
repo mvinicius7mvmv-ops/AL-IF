@@ -386,7 +386,7 @@ export function AdminMatches() {
               </div>
             ) : (
               <div className="space-y-2">
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     className="input flex-1"
                     placeholder="Nome da competição"
@@ -394,28 +394,30 @@ export function AdminMatches() {
                     onChange={e => setNewCompName(e.target.value)}
                     autoFocus
                   />
-                  <select
-                    className="input w-32"
-                    value={newCompType}
-                    onChange={e => setNewCompType(e.target.value as Competition['type'])}
-                  >
-                    {COMP_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-                  </select>
-                  <button
-                    type="button"
-                    onClick={quickCreateCompetition}
-                    disabled={creatingQuick}
-                    className="btn-primary text-xs whitespace-nowrap"
-                  >
-                    {creatingQuick ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Criar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowNewComp(false); setNewCompName(''); }}
-                    className="btn-ghost text-red-400"
-                  >
-                    <X size={16} />
-                  </button>
+                  <div className="flex gap-2">
+                    <select
+                      className="input flex-1 sm:w-32"
+                      value={newCompType}
+                      onChange={e => setNewCompType(e.target.value as Competition['type'])}
+                    >
+                      {COMP_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={quickCreateCompetition}
+                      disabled={creatingQuick}
+                      className="btn-primary text-xs whitespace-nowrap"
+                    >
+                      {creatingQuick ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Criar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowNewComp(false); setNewCompName(''); }}
+                      className="btn-ghost text-red-400"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

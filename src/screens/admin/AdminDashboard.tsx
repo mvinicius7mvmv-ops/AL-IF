@@ -133,7 +133,7 @@ export function AdminDashboard() {
                   <Crest size={40} />
                   <div>
                     <p className="text-xs text-neutral-500">AL-IF FC vs</p>
-                    <p className="text-white font-bold">{nextMatch.adversario}</p>
+                    <p className="text-white font-bold line-clamp-2">{nextMatch.adversario}</p>
                   </div>
                 </div>
                 <div className="text-right">

@@ -135,7 +135,7 @@ export function PublicCompetitionDetail({ competitionId }: { competitionId: stri
                     <div className="w-8 h-8 rounded-full bg-neutral-800 overflow-hidden shrink-0">
                       {s.player.foto_url ? <img src={s.player.foto_url} alt={s.player.nome} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs font-bold text-neutral-600">{(s.player.apelido || s.player.nome).charAt(0).toUpperCase()}</div>}
                     </div>
-                    <span className="text-white text-sm flex-1 truncate">{s.player.apelido || s.player.nome}</span>
+                    <span className="text-white text-sm flex-1 line-clamp-1 min-w-0">{s.player.apelido || s.player.nome}</span>
                     <span className="text-green-400 font-bold text-sm tabular-nums">{s.count}</span>
                   </div>
                 ))}
@@ -152,7 +152,7 @@ export function PublicCompetitionDetail({ competitionId }: { competitionId: stri
                     <div className="w-8 h-8 rounded-full bg-neutral-800 overflow-hidden shrink-0">
                       {s.player.foto_url ? <img src={s.player.foto_url} alt={s.player.nome} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs font-bold text-neutral-600">{(s.player.apelido || s.player.nome).charAt(0).toUpperCase()}</div>}
                     </div>
-                    <span className="text-white text-sm flex-1 truncate">{s.player.apelido || s.player.nome}</span>
+                    <span className="text-white text-sm flex-1 line-clamp-1 min-w-0">{s.player.apelido || s.player.nome}</span>
                     <span className="text-blue-400 font-bold text-sm tabular-nums">{s.count}</span>
                   </div>
                 ))}
@@ -195,7 +195,7 @@ export function PublicCompetitionDetail({ competitionId }: { competitionId: stri
                 className="w-full flex items-center gap-3 p-3 rounded-lg bg-neutral-800/50 hover:bg-neutral-800 transition-colors text-left"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">AL-IF FC vs {m.adversario}</p>
+                  <p className="text-white text-sm font-medium line-clamp-2">AL-IF FC vs {m.adversario}</p>
                   <div className="flex items-center gap-2 mt-1">
                     <span className="text-neutral-600 text-xs">{formatDate(m.data)}</span>
                     {m.status === 'completed' && <span className="text-neutral-400 text-xs font-bold">{m.gols_alif ?? 0} x {m.gols_adversario ?? 0}</span>}

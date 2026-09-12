@@ -235,7 +235,7 @@ export function AdminStats() {
                 {s.player.foto_url ? <img src={s.player.foto_url} alt={s.player.nome} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-neutral-600 font-bold">{(s.player.apelido || s.player.nome).charAt(0).toUpperCase()}</div>}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm truncate">{s.player.apelido || s.player.nome}</p>
+                <p className="text-white font-semibold text-sm line-clamp-1">{s.player.apelido || s.player.nome}</p>
                 <p className="text-neutral-500 text-xs">
                   Auto: {v.auto}
                   {v.adj !== 0 && <span className={v.adj > 0 ? 'text-blue-400' : 'text-red-400'}> · Ajuste: {v.adj > 0 ? '+' : ''}{v.adj}</span>}
@@ -257,10 +257,10 @@ export function AdminStats() {
             {adjustments.map(adj => (
               <div key={adj.id} className="card p-3 flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
+                  <p className="text-white text-sm font-medium line-clamp-1">
                     {adj.profiles?.apelido || adj.profiles?.nome || '—'} · {tipoLabels[adj.tipo]}
                   </p>
-                  <p className="text-neutral-500 text-xs truncate">{adj.motivo}</p>
+                  <p className="text-neutral-500 text-xs line-clamp-2">{adj.motivo}</p>
                 </div>
                 <span className={cn('text-sm font-bold tabular-nums', adj.valor > 0 ? 'text-green-400' : 'text-red-400')}>{adj.valor > 0 ? '+' : ''}{adj.valor}</span>
                 <button onClick={() => openEdit(adj)} className="text-neutral-500 hover:text-white"><Edit2 size={14} /></button>

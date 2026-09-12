@@ -60,8 +60,8 @@ export function PlayerLayout({ children }: { children: React.ReactNode }) {
       <div className="pt-4 border-t border-neutral-800 mt-4">
         <ThemeToggle className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors mb-2" />
         <div className="px-3 py-2 mb-2">
-          <p className="text-white text-sm font-medium truncate">{profile?.apelido || profile?.nome}</p>
-          <p className="text-neutral-500 text-xs truncate">{profile?.posicao || 'Jogador'}</p>
+          <p className="text-white text-sm font-medium line-clamp-1">{profile?.apelido || profile?.nome}</p>
+          <p className="text-neutral-500 text-xs line-clamp-1">{profile?.posicao || 'Jogador'}</p>
         </div>
         <button
           onClick={() => { signOut(); navigate('/'); }}
@@ -120,12 +120,12 @@ export function PlayerLayout({ children }: { children: React.ReactNode }) {
                 key={item.path}
                 onClick={() => go(item.path)}
                 className={cn(
-                  'flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-medium transition-colors',
+                  'flex flex-col items-center justify-center py-2.5 gap-0.5 text-[9px] font-medium transition-colors min-w-0 px-1',
                   active ? 'text-red-500' : 'text-neutral-500',
                 )}
               >
-                <Icon size={20} />
-                {item.label}
+                <Icon size={20} className="shrink-0" />
+                <span className="line-clamp-1 w-full text-center leading-tight">{item.label}</span>
               </button>
             );
           })}

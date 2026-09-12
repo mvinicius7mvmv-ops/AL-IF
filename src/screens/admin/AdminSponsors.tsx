@@ -173,7 +173,7 @@ export function AdminSponsors() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold truncate">{s.name}</p>
+                <p className="text-white font-semibold line-clamp-1">{s.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className={`badge ${s.active ? 'border-green-500/30 text-green-400' : 'border-neutral-700 text-neutral-500'}`}>
                     {s.active ? 'Ativo' : 'Inativo'}

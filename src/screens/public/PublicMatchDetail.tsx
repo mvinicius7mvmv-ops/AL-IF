@@ -73,7 +73,7 @@ export function PublicMatchDetail({ matchId }: { matchId: string }) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
             <Crest size={56} />
-            <p className="text-white font-bold text-sm text-center truncate w-full">AL-IF FC</p>
+            <p className="text-white font-bold text-sm text-center line-clamp-1 w-full">AL-IF FC</p>
           </div>
 
           <div className="px-3 py-2 rounded-xl bg-neutral-800 shrink-0">
@@ -98,7 +98,7 @@ export function PublicMatchDetail({ matchId }: { matchId: string }) {
                 <Shirt size={24} className="text-neutral-600" />
               )}
             </div>
-            <p className="text-white font-bold text-sm text-center truncate w-full">{match.adversario}</p>
+            <p className="text-white font-bold text-sm text-center line-clamp-2 w-full">{match.adversario}</p>
           </div>
         </div>
 
@@ -149,7 +149,7 @@ export function PublicMatchDetail({ matchId }: { matchId: string }) {
                   </div>
                   <EventIcon tipo={ev.tipo} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{name}</p>
+                    <p className="text-white text-sm font-medium line-clamp-1">{name}</p>
                     {isGuest && <p className="text-neutral-500 text-xs">Convidado</p>}
                   </div>
                   <span className={cn(
@@ -181,7 +181,7 @@ export function PublicMatchDetail({ matchId }: { matchId: string }) {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-bold text-lg truncate">{momPlayer.apelido || momPlayer.nome}</p>
+              <p className="text-white font-bold text-base sm:text-lg line-clamp-2">{momPlayer.apelido || momPlayer.nome}</p>
               {momPlayer.posicao && <p className="text-neutral-500 text-sm">{momPlayer.posicao}</p>}
             </div>
             <Star size={32} className="text-yellow-400 shrink-0" fill="currentColor" />

@@ -122,7 +122,7 @@ export function MatchCard({ match, onClick }: { match: Match; onClick: () => voi
           ) : null}
           <div className="min-w-0">
             <p className="text-[10px] text-neutral-500 uppercase tracking-wide">AL-IF FC vs</p>
-            <p className="text-white font-bold truncate">{match.adversario}</p>
+            <p className="text-white font-bold line-clamp-2">{match.adversario}</p>
           </div>
         </div>
         {isCompleted && (
@@ -137,7 +137,7 @@ export function MatchCard({ match, onClick }: { match: Match; onClick: () => voi
       <div className="mt-3 pt-3 border-t border-neutral-800 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-neutral-400">
         <span className="flex items-center gap-1.5"><Calendar size={12} /> {formatDate(match.data)}</span>
         {match.horario && <span className="flex items-center gap-1.5"><Clock size={12} /> {match.horario.slice(0,5)}</span>}
-        {match.local && <span className="flex items-center gap-1.5 truncate"><MapPin size={12} /> {match.local}</span>}
+        {match.local && <span className="flex items-center gap-1.5 line-clamp-1 min-w-0"><MapPin size={12} className="shrink-0" /> {match.local}</span>}
       </div>
 
       {match.competicao && (

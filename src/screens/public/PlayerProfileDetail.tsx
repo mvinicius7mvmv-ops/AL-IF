@@ -247,7 +247,7 @@ export function PlayerProfileDetail({ playerId }: { playerId: string }) {
                       <span className="text-neutral-600 text-xs">x</span>
                       <span className="text-white font-bold text-lg tabular-nums">{h.match.gols_adversario ?? 0}</span>
                     </div>
-                    <p className="text-neutral-300 text-sm truncate">{h.match.adversario}</p>
+                    <p className="text-neutral-300 text-sm line-clamp-1">{h.match.adversario}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-neutral-500 text-xs">{formatDate(h.match.data)}</p>
@@ -296,7 +296,7 @@ function PrivateField({ icon, label, value }: { icon: React.ReactNode; label: st
       <span className="text-red-400">{icon}</span>
       <div className="min-w-0">
         <p className="text-neutral-500 text-xs">{label}</p>
-        <p className="text-white text-sm font-medium truncate">{value}</p>
+        <p className="text-white text-sm font-medium line-clamp-2">{value}</p>
       </div>
     </div>
   );

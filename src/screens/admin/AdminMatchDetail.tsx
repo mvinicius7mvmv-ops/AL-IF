@@ -404,7 +404,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
             <div className="flex items-center justify-between gap-3">
               <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
                 <Crest size={56} />
-                <p className="text-white font-bold text-sm text-center truncate w-full">AL-IF FC</p>
+                <p className="text-white font-bold text-sm text-center line-clamp-1 w-full">AL-IF FC</p>
               </div>
               <div className="px-3 py-2 rounded-xl bg-neutral-800 shrink-0">
                 {match.status === 'completed' ? (
@@ -423,7 +423,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
                 <div className="w-14 h-14 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center overflow-hidden shrink-0">
                   {match.logo_url ? <img src={match.logo_url} alt={match.adversario} className="w-full h-full object-contain p-1" /> : <Shirt size={24} className="text-neutral-600" />}
                 </div>
-                <p className="text-white font-bold text-sm text-center truncate w-full">{match.adversario}</p>
+                <p className="text-white font-bold text-sm text-center line-clamp-2 w-full">{match.adversario}</p>
               </div>
             </div>
             <div className="mt-5 pt-5 border-t border-neutral-800 grid grid-cols-2 gap-3 text-sm">
@@ -489,21 +489,23 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
                   <button type="button" onClick={() => setShowNewComp(true)} className="btn-secondary text-xs whitespace-nowrap"><Plus size={14} /> Nova</button>
                 </div>
               ) : (
-                <div className="flex gap-2">
-                  <input className="input flex-1" placeholder="Nome" value={newCompName} onChange={e => setNewCompName(e.target.value)} autoFocus />
-                  <select className="input w-32" value={newCompType} onChange={e => setNewCompType(e.target.value as Competition['type'])}>
-                    {COMP_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
-                  </select>
-                  <button type="button" onClick={async () => {
-                    if (!newCompName.trim()) return;
-                    setCreatingQuick(true);
-                    try {
-                      const { data } = await supabase.from('competitions').insert({ name: newCompName.trim(), type: newCompType, active: true }).select().single();
-                      if (data) { setCompetitions(p => [...p, data as Competition].sort((a, b) => a.name.localeCompare(b.name))); setInfoForm(f => ({ ...f, competition_id: data.id, competicao: data.name })); }
-                      setShowNewComp(false); setNewCompName('');
-                    } catch { } finally { setCreatingQuick(false); }
-                  }} disabled={creatingQuick} className="btn-primary text-xs whitespace-nowrap">{creatingQuick ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Criar</button>
-                  <button type="button" onClick={() => { setShowNewComp(false); setNewCompName(''); }} className="btn-ghost text-red-400"><X size={16} /></button>
+                <div className="space-y-2">
+                  <input className="input" placeholder="Nome da competição" value={newCompName} onChange={e => setNewCompName(e.target.value)} autoFocus />
+                  <div className="flex gap-2">
+                    <select className="input flex-1" value={newCompType} onChange={e => setNewCompType(e.target.value as Competition['type'])}>
+                      {COMP_TYPES.map(t => <option key={t} value={t}>{TYPE_LABELS[t]}</option>)}
+                    </select>
+                    <button type="button" onClick={async () => {
+                      if (!newCompName.trim()) return;
+                      setCreatingQuick(true);
+                      try {
+                        const { data } = await supabase.from('competitions').insert({ name: newCompName.trim(), type: newCompType, active: true }).select().single();
+                        if (data) { setCompetitions(p => [...p, data as Competition].sort((a, b) => a.name.localeCompare(b.name))); setInfoForm(f => ({ ...f, competition_id: data.id, competicao: data.name })); }
+                        setShowNewComp(false); setNewCompName('');
+                      } catch { } finally { setCreatingQuick(false); }
+                    }} disabled={creatingQuick} className="btn-primary text-xs whitespace-nowrap">{creatingQuick ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Criar</button>
+                    <button type="button" onClick={() => { setShowNewComp(false); setNewCompName(''); }} className="btn-ghost text-red-400"><X size={16} /></button>
+                  </div>
                 </div>
               )}
               {!showSecondComp && !showNewComp && (
@@ -548,7 +550,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
             <input className="input text-center text-2xl font-bold tabular-nums" type="number" min="0" placeholder="0" value={scoreForm.gols_alif} onChange={e => setScoreForm(f => ({ ...f, gols_alif: e.target.value }))} />
           </div>
           <div>
-            <label className="label">{match.adversario}</label>
+            <label className="label line-clamp-1">{match.adversario}</label>
             <input className="input text-center text-2xl font-bold tabular-nums" type="number" min="0" placeholder="0" value={scoreForm.gols_adversario} onChange={e => setScoreForm(f => ({ ...f, gols_adversario: e.target.value }))} />
           </div>
         </div>
@@ -594,8 +596,10 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
                   <div className="text-neutral-500 text-sm font-mono w-10 text-center shrink-0">{ev.minuto != null ? `${ev.minuto}'` : '-'}</div>
                   <EventIcon tipo={ev.tipo} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{name}</p>
-                    {!ev.player_id && ev.guest_id && <p className="text-neutral-500 text-xs">Convidado</p>}
+                    <p className="text-white text-sm font-medium line-clamp-1">{name}</p>
+                    {!ev.player_id && ev.guest_id && (
+                      <p className="text-neutral-500 text-xs">Convidado</p>
+                    )}
                   </div>
                   <span className="text-xs text-neutral-400 shrink-0">{eventTypeLabel(ev.tipo)}</span>
                   <button onClick={() => openEditEvent(ev)} className="text-neutral-500 hover:text-white"><Edit2 size={14} /></button>
@@ -624,7 +628,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
                       {p.foto_url ? <img src={p.foto_url} alt={p.nome} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-lg font-bold text-neutral-600">{(p.apelido || p.nome).charAt(0).toUpperCase()}</div>}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold truncate">{p.apelido || p.nome}</p>
+                      <p className="text-white font-semibold line-clamp-1">{p.apelido || p.nome}</p>
                       {p.numero && <p className="text-neutral-500 text-xs">#{p.numero}</p>}
                     </div>
                     <Star size={20} className="text-yellow-400 shrink-0" />
@@ -654,8 +658,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
               <button onClick={saveMom} className="btn-primary text-sm flex-1" disabled={savingMom}>{savingMom && <Loader2 size={14} className="animate-spin" />} Salvar</button>
             </div>
           </div>
-        )
-      }
+        )}
       </div>
 
       {/* Attendance */}
@@ -679,7 +682,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
                     <div className="w-full h-full flex items-center justify-center text-xs font-bold text-neutral-500">{(p.apelido || p.nome).charAt(0).toUpperCase()}</div>
                   )}
                 </div>
-                <span className="text-neutral-300 text-sm truncate flex-1">{p.apelido || p.nome}</span>
+                <span className="text-neutral-300 text-sm line-clamp-1 flex-1 min-w-0">{p.apelido || p.nome}</span>
                 <div className="flex gap-1 shrink-0">
                   {(['vou', 'talvez', 'nao_vou'] as const).map(status => (
                     <button
@@ -731,7 +734,7 @@ export function AdminMatchDetail({ matchId }: { matchId: string }) {
                   {g.nome.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">{g.nome}</p>
+                  <p className="text-white text-sm font-medium line-clamp-1">{g.nome}</p>
                   {g.posicao && <p className="text-neutral-500 text-xs">{g.posicao}</p>}
                 </div>
                 <span className={cn(

@@ -68,7 +68,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="px-3 py-2 mb-2 flex items-center gap-2">
           <UserCog size={16} className="text-neutral-500" />
           <div className="min-w-0">
-            <p className="text-white text-sm font-medium truncate">{profile?.nome || 'Admin'}</p>
+            <p className="text-white text-sm font-medium line-clamp-1">{profile?.nome || 'Admin'}</p>
             <p className="text-neutral-500 text-xs">Diretoria</p>
           </div>
         </div>
@@ -124,12 +124,12 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 key={item.path}
                 onClick={() => go(item.path)}
                 className={cn(
-                  'flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-medium transition-colors',
+                  'flex flex-col items-center justify-center py-2.5 gap-0.5 text-[9px] font-medium transition-colors min-w-0 px-1',
                   isActive(item) ? 'text-red-500' : 'text-neutral-500',
                 )}
               >
-                <Icon size={20} />
-                {item.label}
+                <Icon size={20} className="shrink-0" />
+                <span className="line-clamp-1 w-full text-center leading-tight">{item.label}</span>
               </button>
             );
           })}

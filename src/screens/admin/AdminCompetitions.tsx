@@ -200,7 +200,7 @@ export function AdminCompetitions() {
                 {c.logo_url ? <img src={c.logo_url} alt={c.name} className="w-full h-full object-contain p-1" /> : <Trophy size={20} className="text-neutral-600" />}
               </button>
               <div className="flex-1 min-w-0">
-                <button onClick={() => navigate(`/competicao/${c.id}`)} className="text-white font-semibold text-sm truncate block hover:text-red-400 transition-colors">{c.name}</button>
+                <button onClick={() => navigate(`/competicao/${c.id}`)} className="text-white font-semibold text-sm line-clamp-2 block hover:text-red-400 transition-colors">{c.name}</button>
                 <p className="text-neutral-500 text-xs">{TYPE_LABELS[c.type]}</p>
                 <span className={`badge mt-1 ${c.active ? 'border-green-500/30 text-green-400' : 'border-neutral-700 text-neutral-500'}`}>{c.active ? 'Ativa' : 'Inativa'}</span>
               </div>

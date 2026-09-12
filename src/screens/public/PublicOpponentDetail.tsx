@@ -108,7 +108,7 @@ export function PublicOpponentDetail({ opponentId }: { opponentId: string }) {
                     <div className="flex items-center gap-2">
                       <Crest size={20} />
                       <span className="text-white text-sm font-medium">{m.gols_alif ?? 0} x {m.gols_adversario ?? 0}</span>
-                      <span className="text-neutral-500 text-sm truncate">{opponent.name}</span>
+                      <span className="text-neutral-500 text-sm line-clamp-1">{opponent.name}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-neutral-600 text-xs">{formatDate(m.data)}</span>

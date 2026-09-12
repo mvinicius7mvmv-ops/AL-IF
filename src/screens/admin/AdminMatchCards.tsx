@@ -294,7 +294,7 @@ function MatchSelector({
                 >
                   <span className="flex items-center gap-2 min-w-0">
                     {selectedId === m.id && <Check size={14} className="shrink-0" />}
-                    <span className="truncate">{m.adversario}</span>
+                    <span className="line-clamp-2">{m.adversario}</span>
                   </span>
                   <span className="text-xs opacity-70 shrink-0 ml-2">
                     {new Date(m.data + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
