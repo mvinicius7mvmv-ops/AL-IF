@@ -30,12 +30,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   async function loadUserData(uid: string) {
-    const [profileRes, roleRes] = await Promise.all([
-      supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle(),
-      supabase.from('user_roles').select('role').eq('user_id', uid).maybeSingle(),
-    ]);
-    setProfile(profileRes.data as Profile | null);
-    setRole((roleRes.data?.role as 'admin' | 'player') ?? null);
+    try {
+      const [profileRes, roleRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', uid).maybeSingle(),
+        supabase.from('user_roles').select('role').eq('user_id', uid).maybeSingle(),
+      ]);
+      setProfile(profileRes.data as Profile | null);
+      setRole((roleRes.data?.role as 'admin' | 'player') ?? null);
+    } catch (e) {
+      console.error('[Auth] Erro ao carregar dados do usuário:', e);
+    }
   }
 
   async function refreshProfile() {

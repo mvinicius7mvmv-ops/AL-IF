@@ -58,18 +58,30 @@ export function AdminOpponents() {
     setUploading(true);
     try {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (!['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext || '')) {
-        showToast('Formato não suportado. Use PNG, JPG, JPEG, WEBP ou SVG.', 'error');
+      if (!['png', 'jpg', 'jpeg', 'webp'].includes(ext || '')) {
+        showToast('Formato não suportado. Use PNG, JPG, JPEG ou WEBP.', 'error');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Imagem muito grande. Máximo 5MB.', 'error');
         return;
       }
       const path = `opponents/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('fotos').upload(path, file, { upsert: true });
-      if (upErr) throw upErr;
+      const { error: upErr } = await supabase.storage.from('fotos').upload(path, file, {
+        upsert: true,
+        contentType: file.type || `image/${ext}`,
+      });
+      if (upErr) {
+        console.error('[Opponents] Erro no upload da logo:', upErr);
+        showToast('Não foi possível enviar a logo. Verifique o formato ou tente outra imagem.', 'error');
+        return;
+      }
       const { data: urlData } = supabase.storage.from('fotos').getPublicUrl(path);
       setLogoUrl(urlData.publicUrl);
       showToast('Logo enviado!', 'success');
-    } catch {
-      showToast('Erro ao enviar logo.', 'error');
+    } catch (e: any) {
+      console.error('[Opponents] Erro inesperado no upload:', e);
+      showToast('Não foi possível enviar a logo. Tente novamente.', 'error');
     } finally {
       setUploading(false);
     }
@@ -201,7 +213,7 @@ export function AdminOpponents() {
         </div>
       )}
 
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogo(f); e.target.value = ''; }} />
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogo(f); e.target.value = ''; }} />
 
       <Modal
         open={modalOpen}
@@ -225,7 +237,7 @@ export function AdminOpponents() {
                 <button onClick={() => fileRef.current?.click()} disabled={uploading} className="btn-secondary text-sm">
                   {uploading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />} Enviar Logo
                 </button>
-                <p className="text-neutral-600 text-xs mt-1">PNG, JPG, JPEG, WEBP ou SVG</p>
+                <p className="text-neutral-600 text-xs mt-1">PNG, JPG, JPEG ou WEBP (máx. 5MB)</p>
               </div>
             </div>
           </div>
