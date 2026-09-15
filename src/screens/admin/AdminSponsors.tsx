@@ -49,21 +49,43 @@ export function AdminSponsors() {
   }
 
   async function handleLogo(file: File) {
+    console.log('[Sponsors] handleLogo iniciado:', { name: file.name, type: file.type, size: file.size });
     setUploading(true);
     try {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (!['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext || '')) {
+      const mime = file.type.toLowerCase();
+
+      if (mime === 'image/heic' || mime === 'image/heif' || ext === 'heic' || ext === 'heif') {
+        showToast('Formato HEIC não suportado. Converta para JPG ou PNG e tente novamente.', 'error');
+        return;
+      }
+
+      const allowedExt = ['png', 'jpg', 'jpeg', 'webp', 'svg'];
+      const allowedMime = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+
+      if (!allowedExt.includes(ext || '') && !allowedMime.includes(mime)) {
+        console.warn('[Sponsors] Formato não suportado:', { name: file.name, type: file.type, ext });
         showToast('Formato não suportado. Use PNG, JPG, JPEG, WEBP ou SVG.', 'error');
         return;
       }
-      const path = `sponsors/${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('fotos').upload(path, file, { upsert: true });
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Imagem muito grande. Máximo 5MB.', 'error');
+        return;
+      }
+
+      const safeExt = allowedExt.includes(ext || '') ? ext : (mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : mime === 'image/svg+xml' ? 'svg' : 'jpg');
+      const path = `sponsors/${Date.now()}.${safeExt}`;
+      const contentType = allowedMime.includes(mime) ? mime : `image/${safeExt}`;
+
+      const { error: upErr } = await supabase.storage.from('fotos').upload(path, file, { upsert: true, contentType });
       if (upErr) throw upErr;
       const { data: urlData } = supabase.storage.from('fotos').getPublicUrl(path);
       setLogoUrl(urlData.publicUrl);
       showToast('Logo enviado!', 'success');
-    } catch {
-      showToast('Erro ao enviar logo.', 'error');
+    } catch (e: any) {
+      console.error('[Sponsors] Erro no upload:', e);
+      showToast(e?.message || 'Erro ao enviar logo.', 'error');
     } finally {
       setUploading(false);
     }
@@ -194,7 +216,7 @@ export function AdminSponsors() {
         </div>
       )}
 
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml" className="hidden" onChange={e => {
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml,image/*" className="sr-only" onChange={e => {
         const f = e.target.files?.[0];
         if (f) handleLogo(f);
         e.target.value = '';

@@ -55,28 +55,49 @@ export function AdminOpponents() {
   }
 
   async function handleLogo(file: File) {
+    console.log('[Opponents] handleLogo iniciado:', { name: file.name, type: file.type, size: file.size });
     setUploading(true);
     try {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (!['png', 'jpg', 'jpeg', 'webp'].includes(ext || '')) {
+      const mime = file.type.toLowerCase();
+
+      if (mime === 'image/heic' || mime === 'image/heif' || ext === 'heic' || ext === 'heif') {
+        console.warn('[Opponents] HEIC/HEIF detectado:', { name: file.name, type: file.type });
+        showToast('Formato HEIC não suportado. Converta para JPG ou PNG e tente novamente.', 'error');
+        return;
+      }
+
+      const allowedExt = ['png', 'jpg', 'jpeg', 'webp'];
+      const allowedMime = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+
+      if (!allowedExt.includes(ext || '') && !allowedMime.includes(mime)) {
+        console.warn('[Opponents] Formato não suportado:', { name: file.name, type: file.type, ext });
         showToast('Formato não suportado. Use PNG, JPG, JPEG ou WEBP.', 'error');
         return;
       }
+
       if (file.size > 5 * 1024 * 1024) {
         showToast('Imagem muito grande. Máximo 5MB.', 'error');
         return;
       }
-      const path = `opponents/${Date.now()}.${ext}`;
+
+      const safeExt = allowedExt.includes(ext || '') ? ext : (mime === 'image/png' ? 'png' : mime === 'image/webp' ? 'webp' : 'jpg');
+      const path = `opponents/${Date.now()}.${safeExt}`;
+      const contentType = allowedMime.includes(mime) ? mime : `image/${safeExt}`;
+
+      console.log('[Opponents] Iniciando upload:', { path, contentType });
       const { error: upErr } = await supabase.storage.from('fotos').upload(path, file, {
         upsert: true,
-        contentType: file.type || `image/${ext}`,
+        contentType,
       });
       if (upErr) {
         console.error('[Opponents] Erro no upload da logo:', upErr);
         showToast('Não foi possível enviar a logo. Verifique o formato ou tente outra imagem.', 'error');
         return;
       }
+
       const { data: urlData } = supabase.storage.from('fotos').getPublicUrl(path);
+      console.log('[Opponents] Upload concluído, URL:', urlData.publicUrl);
       setLogoUrl(urlData.publicUrl);
       showToast('Logo enviado!', 'success');
     } catch (e: any) {
@@ -213,7 +234,7 @@ export function AdminOpponents() {
         </div>
       )}
 
-      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogo(f); e.target.value = ''; }} />
+      <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/*" className="sr-only" onChange={e => { const f = e.target.files?.[0]; if (f) handleLogo(f); e.target.value = ''; }} />
 
       <Modal
         open={modalOpen}
